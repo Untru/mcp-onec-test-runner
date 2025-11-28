@@ -91,12 +91,7 @@ class FileBuildStateManager(
     }
 
     fun updateHashes(files: Map<Path, String>) {
-        try {
-            hashStorage.batchUpdate(files)
-        } catch (e: Exception) {
-            logger.error(e) { "Не удалось обновить хеши файлов" }
-            throw e
-        }
+        hashStorage.batchUpdate(files)
     }
 
     fun storeTimestamp(

@@ -44,7 +44,7 @@ import kotlin.time.Duration
  */
 interface BuildAction {
     /**
-     * Выполняет сборку проекта
+     * Выполняет сборку проекта (полная загрузка)
      *
      * @param properties Свойства приложения с конфигурацией
      * @param sourceSet Описание исходных файлов проекта
@@ -53,6 +53,24 @@ interface BuildAction {
     fun run(
         properties: ApplicationProperties,
         sourceSet: SourceSet,
+    ): BuildResult
+
+    /**
+     * Выполняет сборку проекта с частичной загрузкой измененных файлов.
+     *
+     * Автоматически определяет режим загрузки (частичная или полная) на основе:
+     * - Количества измененных файлов (сравнение с порогом partialLoadThreshold)
+     * - Наличия изменений в Configuration.xml
+     *
+     * @param properties Свойства приложения с конфигурацией
+     * @param sourceSet Описание исходных файлов проекта
+     * @param sourceSetChanges Изменения, сгруппированные по source set
+     * @return Результат сборки
+     */
+    fun runPartial(
+        properties: ApplicationProperties,
+        sourceSet: SourceSet,
+        sourceSetChanges: Map<String, SourceSetChanges>,
     ): BuildResult
 }
 

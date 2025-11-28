@@ -21,6 +21,7 @@
 
 package io.github.alkoleft.mcp.application.services
 
+import io.github.alkoleft.mcp.application.actions.change.SourceSetChanges
 import io.github.alkoleft.mcp.application.actions.common.ActionStepResult
 import io.github.alkoleft.mcp.application.actions.common.BuildAction
 import io.github.alkoleft.mcp.application.actions.common.BuildResult
@@ -116,7 +117,7 @@ class LauncherService(
             }
         }
 
-        val result = updateIB(changedSourceSets)
+        val result = updateIB(changedSourceSets, changes.sourceSetChanges)
 
         var success = true
         val errors = mutableListOf<String>()
@@ -143,9 +144,19 @@ class LauncherService(
         )
     }
 
-    private fun updateIB(changedSourceSets: SourceSet): BuildResult =
-        buildAction.run(
+    /**
+     * Обновляет информационную базу с поддержкой частичной загрузки.
+     *
+     * Автоматически выбирает режим загрузки (частичная или полная) на основе
+     * количества измененных файлов и настройки partialLoadThreshold.
+     */
+    private fun updateIB(
+        changedSourceSets: SourceSet,
+        sourceSetChanges: Map<String, SourceSetChanges>,
+    ): BuildResult =
+        buildAction.runPartial(
             properties,
             designerSourceSet.subSourceSet { changedSourceSets.find { item -> item.name == it.name } != null },
+            sourceSetChanges,
         )
 }
