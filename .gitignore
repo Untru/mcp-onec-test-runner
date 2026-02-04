@@ -45,3 +45,8 @@ logs/
 *.db
 *.wal.*
 *.gz
+
+### Local Configuration ###
+mcp-configs/
+mcp-example.json
+DEPLOYMENT.md

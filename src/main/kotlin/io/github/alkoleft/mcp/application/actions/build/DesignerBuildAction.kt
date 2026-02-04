@@ -24,6 +24,8 @@ package io.github.alkoleft.mcp.application.actions.build
 import io.github.alkoleft.mcp.configuration.properties.ApplicationProperties
 import io.github.alkoleft.mcp.infrastructure.platform.dsl.PlatformDsl
 import io.github.alkoleft.mcp.infrastructure.platform.dsl.designer.DesignerDsl
+import io.github.alkoleft.mcp.infrastructure.platform.dsl.process.ProcessResult
+import io.github.alkoleft.mcp.infrastructure.utility.PartialLoadListGenerator
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import java.nio.file.Path
@@ -35,7 +37,8 @@ import java.nio.file.Path
 @ConditionalOnProperty(name = ["app.tools.builder"], havingValue = "DESIGNER")
 class DesignerBuildAction(
     dsl: PlatformDsl,
-) : AbstractBuildAction(dsl) {
+    partialLoadListGenerator: PartialLoadListGenerator,
+) : AbstractBuildAction(dsl, partialLoadListGenerator) {
     private lateinit var actionDsl: DesignerDsl
 
     override fun initDsl(properties: ApplicationProperties) {
@@ -55,6 +58,21 @@ class DesignerBuildAction(
         updateDBCfg()
     }
 
+    override fun loadConfigurationPartial(
+        name: String,
+        path: Path,
+        changedFiles: Set<Path>,
+    ): ProcessResult {
+        val listFile = partialLoadListGenerator.generate(path, changedFiles)
+        return actionDsl.loadConfigFromFiles {
+            fromPath(path)
+            partial()
+            listFile(listFile)
+            updateConfigDumpInfo()
+            updateDBCfg()
+        }
+    }
+
     override fun loadExtension(
         name: String,
         path: Path,
@@ -62,6 +80,22 @@ class DesignerBuildAction(
         fromPath(path)
         extension(name)
         updateDBCfg()
+    }
+
+    override fun loadExtensionPartial(
+        name: String,
+        path: Path,
+        changedFiles: Set<Path>,
+    ): ProcessResult {
+        val listFile = partialLoadListGenerator.generate(path, changedFiles)
+        return actionDsl.loadConfigFromFiles {
+            fromPath(path)
+            extension(name)
+            partial()
+            listFile(listFile)
+            updateConfigDumpInfo()
+            updateDBCfg()
+        }
     }
 
     override fun updateDb() = null

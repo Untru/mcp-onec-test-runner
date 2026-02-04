@@ -27,6 +27,7 @@ import io.github.alkoleft.mcp.application.actions.test.yaxunit.RunListTestsReque
 import io.github.alkoleft.mcp.application.actions.test.yaxunit.RunModuleTestsRequest
 import io.github.alkoleft.mcp.application.actions.test.yaxunit.YaXUnitTestAction
 import io.github.alkoleft.mcp.infrastructure.platform.dsl.PlatformDsl
+import io.github.alkoleft.mcp.infrastructure.utility.PartialLoadListGenerator
 import io.github.alkoleft.mcp.infrastructure.yaxunit.ReportParser
 import io.github.alkoleft.mcp.infrastructure.yaxunit.YaXUnitRunner
 import org.junit.jupiter.api.Test
@@ -84,7 +85,7 @@ class RealTests(
     // Тесты для DesignerBuildAction
     @Test
     fun designerBuildActionFullBuild() {
-        val action = DesignerBuildAction(platformDsl)
+        val action = DesignerBuildAction(platformDsl, PartialLoadListGenerator())
         val properties = testApplicationProperties()
 
         val result = action.run(properties, properties.sourceSet)
