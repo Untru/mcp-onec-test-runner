@@ -240,18 +240,20 @@ class McpServer(
         logger.info { "Выгрузка конфигурации: режим=$mode, расширение=$extension, все расширения=$allExtensions" }
 
         return try {
-            val dumpMode = when (mode?.uppercase()) {
-                "INCREMENTAL" -> DumpMode.INCREMENTAL
-                "PARTIAL" -> DumpMode.PARTIAL
-                else -> DumpMode.FULL
-            }
+            val dumpMode =
+                when (mode?.uppercase()) {
+                    "INCREMENTAL" -> DumpMode.INCREMENTAL
+                    "PARTIAL" -> DumpMode.PARTIAL
+                    else -> DumpMode.FULL
+                }
 
-            val request = DumpRequest(
-                mode = dumpMode,
-                extension = extension,
-                allExtensions = allExtensions ?: false,
-                objects = objects ?: emptyList(),
-            )
+            val request =
+                DumpRequest(
+                    mode = dumpMode,
+                    extension = extension,
+                    allExtensions = allExtensions ?: false,
+                    objects = objects ?: emptyList(),
+                )
 
             val result = dumpService.dump(request)
 

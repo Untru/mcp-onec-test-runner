@@ -150,11 +150,13 @@ class PartialLoadListGeneratorTest {
         // Arrange
         val sourceSetPath = tempDir.resolve("config")
         Files.createDirectories(sourceSetPath.resolve("Catalogs"))
-        val changedFiles = (1..10).map {
-            val file = sourceSetPath.resolve("Catalogs/Catalog$it.xml")
-            Files.writeString(file, "<catalog/>")
-            file
-        }.toSet()
+        val changedFiles =
+            (1..10)
+                .map {
+                    val file = sourceSetPath.resolve("Catalogs/Catalog$it.xml")
+                    Files.writeString(file, "<catalog/>")
+                    file
+                }.toSet()
 
         // Act & Assert
         assertTrue(generator.shouldUsePartialLoad(changedFiles, 20, sourceSetPath))
@@ -283,4 +285,3 @@ class PartialLoadListGeneratorTest {
         assertTrue(content.isEmpty())
     }
 }
-

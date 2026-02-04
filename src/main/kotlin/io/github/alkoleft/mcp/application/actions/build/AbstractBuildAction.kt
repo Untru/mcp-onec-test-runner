@@ -63,9 +63,10 @@ abstract class AbstractBuildAction(
         properties: ApplicationProperties,
         sourceSet: SourceSet,
         sourceSetChanges: Map<String, SourceSetChanges>,
-    ): BuildResult = measureExecutionTime {
-        executeBuildDslPartial(properties, sourceSet, sourceSetChanges)
-    }
+    ): BuildResult =
+        measureExecutionTime {
+            executeBuildDslPartial(properties, sourceSet, sourceSetChanges)
+        }
 
     /**
      * Измеряет время выполнения операции с обработкой ошибок
@@ -147,13 +148,14 @@ abstract class AbstractBuildAction(
             val configPath = sourceSet.basePath.resolve(configuration.path)
             val changes = sourceSetChanges[configuration.name]
 
-            val result = if (changes != null && shouldUsePartialLoad(changes, threshold, configPath)) {
-                logger.info { "Частичная загрузка конфигурации: ${changes.changedFiles.size} файлов" }
-                loadConfigurationPartial(configuration.name, configPath, changes.changedFiles)
-            } else {
-                logger.info { "Полная загрузка конфигурации" }
-                loadConfiguration(configuration.name, configPath)
-            }
+            val result =
+                if (changes != null && shouldUsePartialLoad(changes, threshold, configPath)) {
+                    logger.info { "Частичная загрузка конфигурации: ${changes.changedFiles.size} файлов" }
+                    loadConfigurationPartial(configuration.name, configPath, changes.changedFiles)
+                } else {
+                    logger.info { "Полная загрузка конфигурации" }
+                    loadConfiguration(configuration.name, configPath)
+                }
             state.addResult(configuration.name, result, "Загрузка конфигурации")
         }
 
@@ -168,13 +170,14 @@ abstract class AbstractBuildAction(
             val extensionPath = sourceSet.basePath.resolve(extension.path)
             val changes = sourceSetChanges[extension.name]
 
-            val result = if (changes != null && shouldUsePartialLoad(changes, threshold, extensionPath)) {
-                logger.info { "Частичная загрузка расширения ${extension.name}: ${changes.changedFiles.size} файлов" }
-                loadExtensionPartial(extension.name, extensionPath, changes.changedFiles)
-            } else {
-                logger.info { "Полная загрузка расширения ${extension.name}" }
-                loadExtension(extension.name, extensionPath)
-            }
+            val result =
+                if (changes != null && shouldUsePartialLoad(changes, threshold, extensionPath)) {
+                    logger.info { "Частичная загрузка расширения ${extension.name}: ${changes.changedFiles.size} файлов" }
+                    loadExtensionPartial(extension.name, extensionPath, changes.changedFiles)
+                } else {
+                    logger.info { "Полная загрузка расширения ${extension.name}" }
+                    loadExtension(extension.name, extensionPath)
+                }
             state.addResult(extension.name, result, "Загрузка расширения ${extension.name}")
 
             if (!result.success) {
@@ -198,13 +201,12 @@ abstract class AbstractBuildAction(
         changes: SourceSetChanges,
         threshold: Int,
         sourceSetPath: Path,
-    ): Boolean {
-        return partialLoadListGenerator.shouldUsePartialLoad(
+    ): Boolean =
+        partialLoadListGenerator.shouldUsePartialLoad(
             changedFiles = changes.changedFiles,
             threshold = threshold,
             sourceSetPath = sourceSetPath,
         )
-    }
 
     /**
      * Инициализирует DSL для выполнения команд

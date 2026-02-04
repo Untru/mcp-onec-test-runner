@@ -34,13 +34,14 @@ class DumpActionStateTest {
     fun `should create successful result when dump succeeds`() {
         // Arrange
         val state = DumpActionState(DumpMode.FULL)
-        val processResult = ProcessResult(
-            success = true,
-            exitCode = 0,
-            output = "Выгрузка выполнена успешно",
-            error = null,
-            duration = Duration.ZERO,
-        )
+        val processResult =
+            ProcessResult(
+                success = true,
+                exitCode = 0,
+                output = "Выгрузка выполнена успешно",
+                error = null,
+                duration = Duration.ZERO,
+            )
 
         // Act
         state.registerDumpResult(processResult, "Выгрузка конфигурации", 150)
@@ -58,13 +59,14 @@ class DumpActionStateTest {
     fun `should create failed result when dump fails`() {
         // Arrange
         val state = DumpActionState(DumpMode.INCREMENTAL)
-        val processResult = ProcessResult(
-            success = false,
-            exitCode = 1,
-            output = "",
-            error = "Ошибка при выгрузке: файл занят",
-            duration = Duration.ZERO,
-        )
+        val processResult =
+            ProcessResult(
+                success = false,
+                exitCode = 1,
+                output = "",
+                error = "Ошибка при выгрузке: файл занят",
+                duration = Duration.ZERO,
+            )
 
         // Act
         state.registerDumpResult(processResult, "Инкрементальная выгрузка")
@@ -81,13 +83,14 @@ class DumpActionStateTest {
     fun `should track steps correctly`() {
         // Arrange
         val state = DumpActionState(DumpMode.PARTIAL)
-        val processResult = ProcessResult(
-            success = true,
-            exitCode = 0,
-            output = "OK",
-            error = null,
-            duration = Duration.ZERO,
-        )
+        val processResult =
+            ProcessResult(
+                success = true,
+                exitCode = 0,
+                output = "OK",
+                error = null,
+                duration = Duration.ZERO,
+            )
 
         // Act
         state.registerDumpResult(processResult, "Частичная выгрузка объектов", 5)

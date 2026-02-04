@@ -73,18 +73,20 @@ class DumpService(
         val sourceSet = sourceSetFactory.createDesignerSourceSet()
 
         return when (request.mode) {
-            DumpMode.FULL -> dumpAction.run(
-                properties = properties,
-                sourceSet = sourceSet,
-                extension = request.extension,
-                allExtensions = request.allExtensions,
-            )
+            DumpMode.FULL ->
+                dumpAction.run(
+                    properties = properties,
+                    sourceSet = sourceSet,
+                    extension = request.extension,
+                    allExtensions = request.allExtensions,
+                )
 
-            DumpMode.INCREMENTAL -> dumpAction.runIncremental(
-                properties = properties,
-                sourceSet = sourceSet,
-                extension = request.extension,
-            )
+            DumpMode.INCREMENTAL ->
+                dumpAction.runIncremental(
+                    properties = properties,
+                    sourceSet = sourceSet,
+                    extension = request.extension,
+                )
 
             DumpMode.PARTIAL -> {
                 if (request.objects.isEmpty()) {

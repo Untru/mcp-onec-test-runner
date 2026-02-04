@@ -46,52 +46,53 @@ class PartialLoadListGenerator {
     /**
      * Типы метаданных 1С и их каталоги
      */
-    private val metadataTypes = setOf(
-        "Catalogs",
-        "Documents",
-        "DataProcessors",
-        "Reports",
-        "InformationRegisters",
-        "AccumulationRegisters",
-        "AccountingRegisters",
-        "CalculationRegisters",
-        "ChartsOfCharacteristicTypes",
-        "ChartsOfAccounts",
-        "ChartsOfCalculationTypes",
-        "ExchangePlans",
-        "BusinessProcesses",
-        "Tasks",
-        "Constants",
-        "Enums",
-        "CommonModules",
-        "CommonForms",
-        "CommonCommands",
-        "CommonTemplates",
-        "CommonPictures",
-        "SessionParameters",
-        "Roles",
-        "CommonAttributes",
-        "ExternalDataSources",
-        "FilterCriteria",
-        "EventSubscriptions",
-        "ScheduledJobs",
-        "FunctionalOptions",
-        "FunctionalOptionsParameters",
-        "DefinedTypes",
-        "SettingsStorages",
-        "Sequences",
-        "DocumentJournals",
-        "WebServices",
-        "HTTPServices",
-        "WSReferences",
-        "Styles",
-        "StyleItems",
-        "Languages",
-        "Subsystems",
-        "CommandGroups",
-        "Interfaces",
-        "XDTOPackages",
-    )
+    private val metadataTypes =
+        setOf(
+            "Catalogs",
+            "Documents",
+            "DataProcessors",
+            "Reports",
+            "InformationRegisters",
+            "AccumulationRegisters",
+            "AccountingRegisters",
+            "CalculationRegisters",
+            "ChartsOfCharacteristicTypes",
+            "ChartsOfAccounts",
+            "ChartsOfCalculationTypes",
+            "ExchangePlans",
+            "BusinessProcesses",
+            "Tasks",
+            "Constants",
+            "Enums",
+            "CommonModules",
+            "CommonForms",
+            "CommonCommands",
+            "CommonTemplates",
+            "CommonPictures",
+            "SessionParameters",
+            "Roles",
+            "CommonAttributes",
+            "ExternalDataSources",
+            "FilterCriteria",
+            "EventSubscriptions",
+            "ScheduledJobs",
+            "FunctionalOptions",
+            "FunctionalOptionsParameters",
+            "DefinedTypes",
+            "SettingsStorages",
+            "Sequences",
+            "DocumentJournals",
+            "WebServices",
+            "HTTPServices",
+            "WSReferences",
+            "Styles",
+            "StyleItems",
+            "Languages",
+            "Subsystems",
+            "CommandGroups",
+            "Interfaces",
+            "XDTOPackages",
+        )
 
     /**
      * Генерирует файл со списком для частичной загрузки.
@@ -224,7 +225,8 @@ class PartialLoadListGenerator {
         filesToLoad: MutableSet<String>,
     ) {
         try {
-            directory.walk()
+            directory
+                .walk()
                 .filter { Files.isRegularFile(it) }
                 .forEach { file ->
                     val relativePath = sourceSetPath.relativize(file).toString().replace("\\", "/")
@@ -256,16 +258,16 @@ class PartialLoadListGenerator {
     fun hasConfigurationXmlChanges(
         sourceSetPath: Path,
         changedFiles: Set<Path>,
-    ): Boolean {
-        return changedFiles.any { file ->
-            val relativePath = if (file.startsWith(sourceSetPath)) {
-                sourceSetPath.relativize(file)
-            } else {
-                file
-            }
+    ): Boolean =
+        changedFiles.any { file ->
+            val relativePath =
+                if (file.startsWith(sourceSetPath)) {
+                    sourceSetPath.relativize(file)
+                } else {
+                    file
+                }
             relativePath.name.equals("Configuration.xml", ignoreCase = true)
         }
-    }
 
     /**
      * Определяет, следует ли использовать частичную загрузку.
@@ -294,4 +296,3 @@ class PartialLoadListGenerator {
         return true
     }
 }
-

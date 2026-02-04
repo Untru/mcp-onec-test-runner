@@ -58,12 +58,13 @@ class DumpServiceTest {
     @Test
     fun `should call run for FULL mode`() {
         // Arrange
-        val expectedResult = DumpResult(
-            message = "Выгрузка успешно",
-            success = true,
-            mode = DumpMode.FULL,
-            duration = Duration.ZERO,
-        )
+        val expectedResult =
+            DumpResult(
+                message = "Выгрузка успешно",
+                success = true,
+                mode = DumpMode.FULL,
+                duration = Duration.ZERO,
+            )
         every {
             dumpAction.run(
                 properties = properties,
@@ -94,12 +95,13 @@ class DumpServiceTest {
     @Test
     fun `should call runIncremental for INCREMENTAL mode`() {
         // Arrange
-        val expectedResult = DumpResult(
-            message = "Инкрементальная выгрузка успешно",
-            success = true,
-            mode = DumpMode.INCREMENTAL,
-            duration = Duration.ZERO,
-        )
+        val expectedResult =
+            DumpResult(
+                message = "Инкрементальная выгрузка успешно",
+                success = true,
+                mode = DumpMode.INCREMENTAL,
+                duration = Duration.ZERO,
+            )
         every {
             dumpAction.runIncremental(
                 properties = properties,
@@ -129,13 +131,14 @@ class DumpServiceTest {
     fun `should call runPartial for PARTIAL mode with objects`() {
         // Arrange
         val objects = listOf("Справочник.Номенклатура", "Документ.Заказ")
-        val expectedResult = DumpResult(
-            message = "Частичная выгрузка успешно",
-            success = true,
-            mode = DumpMode.PARTIAL,
-            dumpedObjects = 2,
-            duration = Duration.ZERO,
-        )
+        val expectedResult =
+            DumpResult(
+                message = "Частичная выгрузка успешно",
+                success = true,
+                mode = DumpMode.PARTIAL,
+                dumpedObjects = 2,
+                duration = Duration.ZERO,
+            )
         every {
             dumpAction.runPartial(
                 properties = properties,
@@ -182,12 +185,13 @@ class DumpServiceTest {
     fun `should pass extension parameter for extension dump`() {
         // Arrange
         val extensionName = "МоеРасширение"
-        val expectedResult = DumpResult(
-            message = "Выгрузка расширения успешно",
-            success = true,
-            mode = DumpMode.FULL,
-            duration = Duration.ZERO,
-        )
+        val expectedResult =
+            DumpResult(
+                message = "Выгрузка расширения успешно",
+                success = true,
+                mode = DumpMode.FULL,
+                duration = Duration.ZERO,
+            )
         every {
             dumpAction.run(
                 properties = properties,
@@ -217,12 +221,13 @@ class DumpServiceTest {
     @Test
     fun `should pass allExtensions flag`() {
         // Arrange
-        val expectedResult = DumpResult(
-            message = "Выгрузка всех расширений успешно",
-            success = true,
-            mode = DumpMode.FULL,
-            duration = Duration.ZERO,
-        )
+        val expectedResult =
+            DumpResult(
+                message = "Выгрузка всех расширений успешно",
+                success = true,
+                mode = DumpMode.FULL,
+                duration = Duration.ZERO,
+            )
         every {
             dumpAction.run(
                 properties = properties,

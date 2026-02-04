@@ -33,4 +33,3 @@ data class BuildProperties(
      */
     val partialLoadThreshold: Int = 20,
 )
-

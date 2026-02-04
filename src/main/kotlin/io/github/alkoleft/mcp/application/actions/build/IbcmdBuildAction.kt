@@ -65,11 +65,12 @@ class IbcmdBuildAction(
         // ibcmd infobase config import files --partial <path>
         lateinit var result: ProcessResult
         actionDsl.config {
-            result = import(path) {
-                importSubCommand = "files"
-                partial = true
-                baseDir = path.toString()
-            }
+            result =
+                import(path) {
+                    importSubCommand = "files"
+                    partial = true
+                    baseDir = path.toString()
+                }
         }
         return result
     }
@@ -96,12 +97,13 @@ class IbcmdBuildAction(
         // Для ibcmd используем подкоманду "files" и параметр --partial с расширением
         lateinit var result: ProcessResult
         actionDsl.config {
-            result = import(path) {
-                extension = name
-                importSubCommand = "files"
-                partial = true
-                baseDir = path.toString()
-            }
+            result =
+                import(path) {
+                    extension = name
+                    importSubCommand = "files"
+                    partial = true
+                    baseDir = path.toString()
+                }
         }
         return result
     }
