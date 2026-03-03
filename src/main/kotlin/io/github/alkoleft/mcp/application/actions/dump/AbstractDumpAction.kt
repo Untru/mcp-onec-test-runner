@@ -49,10 +49,9 @@ abstract class AbstractDumpAction(
         properties: ApplicationProperties,
         sourceSet: SourceSet,
         extension: String?,
-        allExtensions: Boolean,
     ): DumpResult =
         measureExecutionTime(DumpMode.FULL) {
-            executeDumpFull(properties, sourceSet, extension, allExtensions)
+            executeDumpFull(properties, sourceSet, extension)
         }
 
     /**
@@ -107,7 +106,6 @@ abstract class AbstractDumpAction(
         properties: ApplicationProperties,
         sourceSet: SourceSet,
         extension: String?,
-        allExtensions: Boolean,
     ): DumpResult {
         logger.debug { "Выгрузка конфигурации (полная)" }
 
@@ -118,10 +116,6 @@ abstract class AbstractDumpAction(
 
         val result =
             when {
-                allExtensions -> {
-                    logger.info { "Выгружаю все расширения в $targetPath" }
-                    dumpAllExtensions(targetPath)
-                }
                 extension != null -> {
                     logger.info { "Выгружаю расширение '$extension' в $targetPath" }
                     dumpExtension(extension, targetPath)
@@ -218,7 +212,7 @@ abstract class AbstractDumpAction(
             if (extensionConfig != null) {
                 sourceSet.basePath.resolve(extensionConfig.path)
             } else {
-                sourceSet.basePath.resolve("extensions/$normalizedExtension")
+                sourceSet.basePath.resolve("exts/$normalizedExtension")
             }
         } else {
             sourceSet.configuration?.let { sourceSet.basePath.resolve(it.path) }
@@ -273,8 +267,4 @@ abstract class AbstractDumpAction(
         objects: List<String>,
     ): ProcessResult
 
-    /**
-     * Выгружает все расширения
-     */
-    protected abstract fun dumpAllExtensions(targetPath: Path): ProcessResult
 }
