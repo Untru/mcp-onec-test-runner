@@ -41,10 +41,11 @@ class DesignerDumpAction(
     private lateinit var actionDsl: DesignerDsl
 
     override fun initDsl(properties: ApplicationProperties) {
-        actionDsl = dsl.designer {
-            disableStartupDialogs()
-            disableStartupMessages()
-        }
+        actionDsl =
+            dsl.designer {
+                disableStartupDialogs()
+                disableStartupMessages()
+            }
     }
 
     override fun dumpConfiguration(targetPath: Path): ProcessResult {
@@ -88,24 +89,22 @@ class DesignerDumpAction(
     override fun dumpExtension(
         name: String,
         targetPath: Path,
-    ): ProcessResult {
-        return actionDsl.dumpConfigToFiles {
+    ): ProcessResult =
+        actionDsl.dumpConfigToFiles {
             toPath(targetPath)
             extension(name)
             updateConfigDumpInfo()
         }
-    }
 
     override fun dumpExtensionIncremental(
         name: String,
         targetPath: Path,
-    ): ProcessResult {
-        return actionDsl.dumpConfigToFiles {
+    ): ProcessResult =
+        actionDsl.dumpConfigToFiles {
             toPath(targetPath)
             extension(name)
             updateConfigDumpInfo()
         }
-    }
 
     override fun dumpExtensionPartial(
         name: String,
@@ -123,14 +122,6 @@ class DesignerDumpAction(
             }
         } finally {
             Files.deleteIfExists(listFile)
-        }
-    }
-
-    override fun dumpAllExtensions(targetPath: Path): ProcessResult {
-        return actionDsl.dumpConfigToFiles {
-            toPath(targetPath)
-            allExtensions()
-            updateConfigDumpInfo()
         }
     }
 

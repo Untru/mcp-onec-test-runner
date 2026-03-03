@@ -98,7 +98,6 @@ class McpServer(
             return McpTestResponse(
                 success = false,
                 message = "Ошибка при выполнении тестов",
-                errors = listOf(e.message.toString()),
             )
         }
     }
@@ -136,7 +135,6 @@ class McpServer(
             return McpTestResponse(
                 success = false,
                 message = "Ошибка при выполнении тестов модуля '$moduleName'",
-                errors = listOf(e.message.toString()),
             )
         }
     }
@@ -199,13 +197,15 @@ class McpServer(
      * в конфигураторе, с исходными файлами проекта.
      *
      * Поддерживаемые режимы выгрузки:
-     * - FULL: Полная выгрузка всей конфигурации
+     * - FULL: Полная выгрузка (основная конфигурация или указанное расширение)
      * - INCREMENTAL: Инкрементальная выгрузка только измененных объектов (требует ConfigDumpInfo.xml)
      * - PARTIAL: Частичная выгрузка конкретных объектов по списку
      *
-     * @param mode Режим выгрузки (FULL, INCREMENTAL, PARTIAL). По умолчанию FULL
-     * @param extension Имя расширения для выгрузки (опционально, если null - основная конфигурация)
-     * @param allExtensions Выгрузить все расширения (опционально)
+     * Для нескольких расширений выполняйте несколько вызовов tool по одному extension.
+     * По умолчанию используйте INCREMENTAL=true, если явно не указан другой режим.
+     *
+     * @param mode Режим выгрузки (FULL, INCREMENTAL, PARTIAL)
+     * @param extension Имя расширения для выгрузки (опционально, если null/пусто - основная конфигурация)
      * @param objects Список объектов метаданных для режима PARTIAL (например, "Справочник.Номенклатура")
      * @return Результат выгрузки конфигурации
      * @throws Exception при возникновении ошибок во время выгрузки
@@ -214,9 +214,11 @@ class McpServer(
         name = "dump_config",
         description = """Выгружает конфигурацию из ИБ в файлы проекта.
             |Режимы выгрузки:
-            |* FULL - полная выгрузка всей конфигурации
+            |* FULL - полная выгрузка (основная конфигурация или указанное extension)
             |* INCREMENTAL - только измененные объекты (требует предыдущую выгрузку)
             |* PARTIAL - конкретные объекты по списку
+            |Для выгрузки нескольких расширений вызывайте tool несколько раз, по одному extension за вызов.
+            |По умолчанию используйте INCREMENTAL=true, если явно не указан другой режим.
             |Используйте для синхронизации изменений, сделанных в конфигураторе.""",
     )
     fun dumpConfig(
@@ -229,29 +231,25 @@ class McpServer(
             required = false,
         ) extension: String?,
         @ToolParam(
-            description = "Выгрузить все расширения",
-            required = false,
-        ) allExtensions: Boolean?,
-        @ToolParam(
             description = "Список объектов метаданных для режима PARTIAL (например: Справочник.Номенклатура, Документ.Заказ)",
             required = false,
         ) objects: List<String>?,
     ): McpDumpResponse {
-        logger.info { "Выгрузка конфигурации: режим=$mode, расширение=$extension, все расширения=$allExtensions" }
-
+        logger.info { "Выгрузка конфигурации: режим=$mode, расширение=$extension" }
         return try {
-            val dumpMode = when (mode?.uppercase()) {
-                "INCREMENTAL" -> DumpMode.INCREMENTAL
-                "PARTIAL" -> DumpMode.PARTIAL
-                else -> DumpMode.FULL
-            }
+            val dumpMode =
+                when (mode?.uppercase()) {
+                    "INCREMENTAL" -> DumpMode.INCREMENTAL
+                    "PARTIAL" -> DumpMode.PARTIAL
+                    else -> DumpMode.FULL
+                }
 
-            val request = DumpRequest(
-                mode = dumpMode,
-                extension = extension,
-                allExtensions = allExtensions ?: false,
-                objects = objects ?: emptyList(),
-            )
+            val request =
+                DumpRequest(
+                    mode = dumpMode,
+                    extension = extension,
+                    objects = objects ?: emptyList(),
+                )
 
             val result = dumpService.dump(request)
 

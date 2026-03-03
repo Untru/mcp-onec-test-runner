@@ -359,14 +359,12 @@ interface DumpAction {
      * @param properties Свойства приложения с конфигурацией
      * @param sourceSet Описание целевого каталога проекта
      * @param extension Имя расширения для выгрузки (null - основная конфигурация)
-     * @param allExtensions Выгрузить все расширения
      * @return Результат выгрузки
      */
     fun run(
         properties: ApplicationProperties,
         sourceSet: SourceSet,
         extension: String? = null,
-        allExtensions: Boolean = false,
     ): DumpResult
 
     /**

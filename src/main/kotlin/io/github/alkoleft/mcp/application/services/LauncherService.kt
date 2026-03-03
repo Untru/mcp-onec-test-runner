@@ -34,7 +34,6 @@ import io.github.alkoleft.mcp.application.actions.common.RunTestAction
 import io.github.alkoleft.mcp.application.actions.common.RunTestResult
 import io.github.alkoleft.mcp.application.actions.convert.EdtInteractiveConvertAction
 import io.github.alkoleft.mcp.application.actions.exceptions.AnalysisError
-import io.github.alkoleft.mcp.application.actions.exceptions.TestExecutionError
 import io.github.alkoleft.mcp.application.actions.test.yaxunit.TestExecutionRequest
 import io.github.alkoleft.mcp.application.actions.test.yaxunit.YaXUnitTestAction
 import io.github.alkoleft.mcp.configuration.properties.ApplicationProperties
@@ -49,6 +48,9 @@ import kotlin.time.Duration
 import kotlin.time.TimeSource
 
 private val logger = KotlinLogging.logger { }
+
+private const val BUILD_REQUIRED_BEFORE_TESTS_MESSAGE =
+    "Обнаружены изменения в исходниках. Сперва нужно воспользоваться инструментом build_project, а затем запускать тесты"
 
 @Service
 class LauncherService(
@@ -66,14 +68,25 @@ class LauncherService(
 
     fun runTests(request: TestExecutionRequest): RunTestResult {
         val start = TimeSource.Monotonic.markNow()
-        val buildResult = build()
-        if (!buildResult.success) {
-            val reason = if (buildResult.errors.isNotEmpty()) buildResult.errors.joinToString("; ") else "Сборка не удалась"
-            throw TestExecutionError(reason)
+        val changes = changeAnalysisAction.run()
+
+        if (changes.hasChanges) {
+            return RunTestResult(
+                success = false,
+                duration = start.elapsedNow(),
+                message = BUILD_REQUIRED_BEFORE_TESTS_MESSAGE,
+                errors = listOf(BUILD_REQUIRED_BEFORE_TESTS_MESSAGE),
+                steps = changes.steps,
+                report = null,
+                reportPath = null,
+                enterpriseLogPath = null,
+                logPath = null,
+            )
         }
+
         val runTestAction: RunTestAction = YaXUnitTestAction(reportParser, yaxUnitRunner)
         return runTestAction.run(request).let {
-            it.copy(steps = buildResult.steps + it.steps, duration = start.elapsedNow())
+            it.copy(duration = start.elapsedNow(), steps = changes.steps + it.steps)
         }
     }
 

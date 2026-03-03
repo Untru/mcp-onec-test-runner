@@ -49,10 +49,10 @@ abstract class AbstractDumpAction(
         properties: ApplicationProperties,
         sourceSet: SourceSet,
         extension: String?,
-        allExtensions: Boolean,
-    ): DumpResult = measureExecutionTime(DumpMode.FULL) {
-        executeDumpFull(properties, sourceSet, extension, allExtensions)
-    }
+    ): DumpResult =
+        measureExecutionTime(DumpMode.FULL) {
+            executeDumpFull(properties, sourceSet, extension)
+        }
 
     /**
      * Выполняет инкрементальную выгрузку с измерением времени
@@ -61,9 +61,10 @@ abstract class AbstractDumpAction(
         properties: ApplicationProperties,
         sourceSet: SourceSet,
         extension: String?,
-    ): DumpResult = measureExecutionTime(DumpMode.INCREMENTAL) {
-        executeDumpIncremental(properties, sourceSet, extension)
-    }
+    ): DumpResult =
+        measureExecutionTime(DumpMode.INCREMENTAL) {
+            executeDumpIncremental(properties, sourceSet, extension)
+        }
 
     /**
      * Выполняет частичную выгрузку конкретных объектов с измерением времени
@@ -73,9 +74,10 @@ abstract class AbstractDumpAction(
         sourceSet: SourceSet,
         objects: List<String>,
         extension: String?,
-    ): DumpResult = measureExecutionTime(DumpMode.PARTIAL) {
-        executeDumpPartial(properties, sourceSet, objects, extension)
-    }
+    ): DumpResult =
+        measureExecutionTime(DumpMode.PARTIAL) {
+            executeDumpPartial(properties, sourceSet, objects, extension)
+        }
 
     /**
      * Измеряет время выполнения операции с обработкой ошибок
@@ -104,7 +106,6 @@ abstract class AbstractDumpAction(
         properties: ApplicationProperties,
         sourceSet: SourceSet,
         extension: String?,
-        allExtensions: Boolean,
     ): DumpResult {
         logger.debug { "Выгрузка конфигурации (полная)" }
 
@@ -113,20 +114,17 @@ abstract class AbstractDumpAction(
 
         val targetPath = resolveTargetPath(sourceSet, extension)
 
-        val result = when {
-            allExtensions -> {
-                logger.info { "Выгружаю все расширения в $targetPath" }
-                dumpAllExtensions(targetPath)
+        val result =
+            when {
+                extension != null -> {
+                    logger.info { "Выгружаю расширение '$extension' в $targetPath" }
+                    dumpExtension(extension, targetPath)
+                }
+                else -> {
+                    logger.info { "Выгружаю основную конфигурацию в $targetPath" }
+                    dumpConfiguration(targetPath)
+                }
             }
-            extension != null -> {
-                logger.info { "Выгружаю расширение '$extension' в $targetPath" }
-                dumpExtension(extension, targetPath)
-            }
-            else -> {
-                logger.info { "Выгружаю основную конфигурацию в $targetPath" }
-                dumpConfiguration(targetPath)
-            }
-        }
 
         state.registerDumpResult(result, "Выгрузка конфигурации")
 
@@ -148,13 +146,14 @@ abstract class AbstractDumpAction(
 
         val targetPath = resolveTargetPath(sourceSet, extension)
 
-        val result = if (extension != null) {
-            logger.info { "Инкрементальная выгрузка расширения '$extension' в $targetPath" }
-            dumpExtensionIncremental(extension, targetPath)
-        } else {
-            logger.info { "Инкрементальная выгрузка основной конфигурации в $targetPath" }
-            dumpConfigurationIncremental(targetPath)
-        }
+        val result =
+            if (extension != null) {
+                logger.info { "Инкрементальная выгрузка расширения '$extension' в $targetPath" }
+                dumpExtensionIncremental(extension, targetPath)
+            } else {
+                logger.info { "Инкрементальная выгрузка основной конфигурации в $targetPath" }
+                dumpConfigurationIncremental(targetPath)
+            }
 
         state.registerDumpResult(result, "Инкрементальная выгрузка")
 
@@ -186,13 +185,14 @@ abstract class AbstractDumpAction(
 
         val targetPath = resolveTargetPath(sourceSet, extension)
 
-        val result = if (extension != null) {
-            logger.info { "Частичная выгрузка расширения '$extension': ${objects.joinToString(", ")}" }
-            dumpExtensionPartial(extension, targetPath, objects)
-        } else {
-            logger.info { "Частичная выгрузка конфигурации: ${objects.joinToString(", ")}" }
-            dumpConfigurationPartial(targetPath, objects)
-        }
+        val result =
+            if (extension != null) {
+                logger.info { "Частичная выгрузка расширения '$extension': ${objects.joinToString(", ")}" }
+                dumpExtensionPartial(extension, targetPath, objects)
+            } else {
+                logger.info { "Частичная выгрузка конфигурации: ${objects.joinToString(", ")}" }
+                dumpConfigurationPartial(targetPath, objects)
+            }
 
         state.registerDumpResult(result, "Частичная выгрузка", objects.size)
 
@@ -205,19 +205,19 @@ abstract class AbstractDumpAction(
     private fun resolveTargetPath(
         sourceSet: SourceSet,
         extension: String?,
-    ): Path {
-        return if (extension != null) {
-            val extensionConfig = sourceSet.extensions.find { it.name == extension }
+    ): Path =
+        if (extension != null) {
+            val normalizedExtension: String = extension.trim()
+            val extensionConfig = sourceSet.extensions.find { it.name.equals(normalizedExtension, ignoreCase = true) }
             if (extensionConfig != null) {
                 sourceSet.basePath.resolve(extensionConfig.path)
             } else {
-                sourceSet.basePath.resolve("extensions/$extension")
+                sourceSet.basePath.resolve("exts/$normalizedExtension")
             }
         } else {
             sourceSet.configuration?.let { sourceSet.basePath.resolve(it.path) }
                 ?: sourceSet.basePath
         }
-    }
 
     /**
      * Инициализирует DSL для выполнения команд
@@ -267,8 +267,4 @@ abstract class AbstractDumpAction(
         objects: List<String>,
     ): ProcessResult
 
-    /**
-     * Выгружает все расширения
-     */
-    protected abstract fun dumpAllExtensions(targetPath: Path): ProcessResult
 }

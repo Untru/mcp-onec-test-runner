@@ -46,9 +46,10 @@ class IbcmdDumpAction(
     override fun dumpConfiguration(targetPath: Path): ProcessResult {
         lateinit var result: ProcessResult
         actionDsl.config {
-            result = export(targetPath) {
-                force = true
-            }
+            result =
+                export(targetPath) {
+                    force = true
+                }
         }
         return result
     }
@@ -57,9 +58,10 @@ class IbcmdDumpAction(
         // Для инкрементальной выгрузки используем --sync
         lateinit var result: ProcessResult
         actionDsl.config {
-            result = export(targetPath) {
-                sync = true
-            }
+            result =
+                export(targetPath) {
+                    sync = true
+                }
         }
         return result
     }
@@ -72,12 +74,13 @@ class IbcmdDumpAction(
         // Используем подкоманду objects если нужно
         lateinit var result: ProcessResult
         actionDsl.config {
-            result = export(targetPath) {
-                exportSubCommand = "objects"
-                // Объекты передаются через файл или строку - зависит от реализации ibcmd
-                // Пока используем стандартный экспорт с синхронизацией
-                sync = true
-            }
+            result =
+                export(targetPath) {
+                    exportSubCommand = "objects"
+                    // Объекты передаются через файл или строку - зависит от реализации ibcmd
+                    // Пока используем стандартный экспорт с синхронизацией
+                    sync = true
+                }
         }
         return result
     }
@@ -88,10 +91,11 @@ class IbcmdDumpAction(
     ): ProcessResult {
         lateinit var result: ProcessResult
         actionDsl.config {
-            result = export(targetPath) {
-                extension = name
-                force = true
-            }
+            result =
+                export(targetPath) {
+                    extension = name
+                    force = true
+                }
         }
         return result
     }
@@ -102,10 +106,11 @@ class IbcmdDumpAction(
     ): ProcessResult {
         lateinit var result: ProcessResult
         actionDsl.config {
-            result = export(targetPath) {
-                extension = name
-                sync = true
-            }
+            result =
+                export(targetPath) {
+                    extension = name
+                    sync = true
+                }
         }
         return result
     }
@@ -119,22 +124,13 @@ class IbcmdDumpAction(
         // Используем инкрементальную выгрузку
         lateinit var result: ProcessResult
         actionDsl.config {
-            result = export(targetPath) {
-                extension = name
-                sync = true
-            }
+            result =
+                export(targetPath) {
+                    extension = name
+                    sync = true
+                }
         }
         return result
     }
 
-    override fun dumpAllExtensions(targetPath: Path): ProcessResult {
-        lateinit var result: ProcessResult
-        actionDsl.config {
-            result = export(targetPath) {
-                exportSubCommand = "all-extensions"
-                force = true
-            }
-        }
-        return result
-    }
 }
