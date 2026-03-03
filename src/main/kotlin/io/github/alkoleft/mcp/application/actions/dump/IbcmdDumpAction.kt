@@ -133,15 +133,4 @@ class IbcmdDumpAction(
         return result
     }
 
-    override fun dumpAllExtensions(targetPath: Path): ProcessResult {
-        lateinit var result: ProcessResult
-        actionDsl.config {
-            result =
-                export(targetPath) {
-                    exportSubCommand = "all-extensions"
-                    force = true
-                }
-        }
-        return result
-    }
 }

@@ -70,7 +70,6 @@ class DumpServiceTest {
                 properties = properties,
                 sourceSet = mockSourceSet,
                 extension = null,
-                allExtensions = false,
             )
         } returns expectedResult
 
@@ -87,7 +86,6 @@ class DumpServiceTest {
                 properties = properties,
                 sourceSet = mockSourceSet,
                 extension = null,
-                allExtensions = false,
             )
         }
     }
@@ -197,7 +195,6 @@ class DumpServiceTest {
                 properties = properties,
                 sourceSet = mockSourceSet,
                 extension = extensionName,
-                allExtensions = false,
             )
         } returns expectedResult
 
@@ -213,17 +210,16 @@ class DumpServiceTest {
                 properties = properties,
                 sourceSet = mockSourceSet,
                 extension = extensionName,
-                allExtensions = false,
             )
         }
     }
 
     @Test
-    fun `should pass allExtensions flag`() {
+    fun `should normalize blank extension to main configuration`() {
         // Arrange
         val expectedResult =
             DumpResult(
-                message = "Выгрузка всех расширений успешно",
+                message = "Выгрузка успешно",
                 success = true,
                 mode = DumpMode.FULL,
                 duration = Duration.ZERO,
@@ -233,11 +229,10 @@ class DumpServiceTest {
                 properties = properties,
                 sourceSet = mockSourceSet,
                 extension = null,
-                allExtensions = true,
             )
         } returns expectedResult
 
-        val request = DumpRequest(mode = DumpMode.FULL, allExtensions = true)
+        val request = DumpRequest(mode = DumpMode.FULL, extension = "   ")
 
         // Act
         val result = dumpService.dump(request)
@@ -249,7 +244,6 @@ class DumpServiceTest {
                 properties = properties,
                 sourceSet = mockSourceSet,
                 extension = null,
-                allExtensions = true,
             )
         }
     }

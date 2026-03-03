@@ -35,13 +35,11 @@ private val logger = KotlinLogging.logger { }
  *
  * @param mode Режим выгрузки (по умолчанию FULL)
  * @param extension Имя расширения для выгрузки (null - основная конфигурация)
- * @param allExtensions Выгрузить все расширения
  * @param objects Список объектов для частичной выгрузки (только для режима PARTIAL)
  */
 data class DumpRequest(
     val mode: DumpMode = DumpMode.FULL,
     val extension: String? = null,
-    val allExtensions: Boolean = false,
     val objects: List<String> = emptyList(),
 )
 
@@ -64,10 +62,10 @@ class DumpService(
      * @return Результат выгрузки
      */
     fun dump(request: DumpRequest): DumpResult {
+        val normalizedExtension = request.extension?.trim()?.takeIf { it.isNotEmpty() }
         logger.info {
             "Выгрузка конфигурации: режим=${request.mode}, " +
-                "расширение=${request.extension ?: "основная конфигурация"}, " +
-                "все расширения=${request.allExtensions}"
+                "расширение=${normalizedExtension ?: "основная конфигурация"}"
         }
 
         val sourceSet = sourceSetFactory.createDesignerSourceSet()
@@ -77,15 +75,14 @@ class DumpService(
                 dumpAction.run(
                     properties = properties,
                     sourceSet = sourceSet,
-                    extension = request.extension,
-                    allExtensions = request.allExtensions,
+                    extension = normalizedExtension,
                 )
 
             DumpMode.INCREMENTAL ->
                 dumpAction.runIncremental(
                     properties = properties,
                     sourceSet = sourceSet,
-                    extension = request.extension,
+                    extension = normalizedExtension,
                 )
 
             DumpMode.PARTIAL -> {
@@ -101,7 +98,7 @@ class DumpService(
                     properties = properties,
                     sourceSet = sourceSet,
                     objects = request.objects,
-                    extension = request.extension,
+                    extension = normalizedExtension,
                 )
             }
         }

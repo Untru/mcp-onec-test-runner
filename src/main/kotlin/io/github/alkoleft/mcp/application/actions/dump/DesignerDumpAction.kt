@@ -125,13 +125,6 @@ class DesignerDumpAction(
         }
     }
 
-    override fun dumpAllExtensions(targetPath: Path): ProcessResult =
-        actionDsl.dumpConfigToFiles {
-            toPath(targetPath)
-            allExtensions()
-            updateConfigDumpInfo()
-        }
-
     /**
      * Создает временный файл со списком объектов для частичной выгрузки
      */

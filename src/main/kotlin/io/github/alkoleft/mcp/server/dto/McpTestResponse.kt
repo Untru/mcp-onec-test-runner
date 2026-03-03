@@ -21,26 +21,8 @@
 
 package io.github.alkoleft.mcp.server.dto
 
-import io.github.alkoleft.mcp.application.actions.common.ActionStepResult
-import io.github.alkoleft.mcp.application.actions.test.yaxunit.GenericTestSuite
-
 /**
- * Результат выполнения тестов в формате MCP
- *
- * Содержит полную информацию о результатах выполнения тестов YaXUnit, включая
- * статистику, детали тестов, пути к логам и информацию об ошибках.
- *
- * @param success Успешность выполнения тестов (true, если все тесты прошли успешно)
- * @param message Сообщение о результате выполнения
- * @param totalTests Общее количество выполненных тестов
- * @param passedTests Количество успешно пройденных тестов
- * @param failedTests Количество проваленных тестов
- * @param executionTime Время выполнения тестов в миллисекундах
- * @param testDetail Детальная информация о наборах тестов (test suites)
- * @param steps Список шагов выполнения (заполняется только при ошибках)
- * @param errors Список ошибок, возникших во время выполнения
- * @param enterpriseLogPath Путь к логу 1С:Предприятие
- * @param logFile Путь к файлу лога выполнения тестов
+ * Минимальный результат выполнения тестов в формате MCP
  */
 data class McpTestResponse(
     val success: Boolean,
@@ -49,9 +31,6 @@ data class McpTestResponse(
     val passedTests: Int? = null,
     val failedTests: Int? = null,
     val executionTime: Long? = null,
-    val testDetail: List<GenericTestSuite>? = null,
-    val steps: List<ActionStepResult>? = null,
-    val errors: List<String>,
     val enterpriseLogPath: String? = null,
     val logFile: String? = null,
 )
