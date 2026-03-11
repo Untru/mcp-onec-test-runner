@@ -33,12 +33,12 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.ConcurrentMap
 
+private val logger = KotlinLogging.logger { }
+
 /**
  * MapDB-based persistent storage for file hashes.
  * Implements thread-safe operations with atomic transactions and efficient batch updates.
  */
-private val logger = KotlinLogging.logger { }
-
 @Component
 class MapDbHashStorage(
     properties: ApplicationProperties,

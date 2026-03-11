@@ -40,9 +40,7 @@ class IbcmdBuildAction(
     private lateinit var actionDsl: IbcmdDsl
 
     override fun initDsl(properties: ApplicationProperties) {
-        actionDsl =
-            dsl.ibcmd {
-            }
+        actionDsl = dsl.ibcmd { }
     }
 
     override fun loadConfiguration(

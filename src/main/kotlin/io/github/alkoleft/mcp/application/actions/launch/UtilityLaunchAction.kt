@@ -39,7 +39,6 @@ private val logger = KotlinLogging.logger { }
 @Component
 class UtilityLaunchAction(
     private val platformDsl: PlatformDsl,
-    private val properties: ApplicationProperties,
 ) : LaunchAction {
     override fun run(request: LaunchRequest): LaunchResult {
         val utilityType =

@@ -58,7 +58,7 @@ class LauncherService(
     private val reportParser: ReportParser,
     private val yaxUnitRunner: YaXUnitRunner,
     private val properties: ApplicationProperties,
-    private val sourceSetFactory: SourceSetFactory,
+    sourceSetFactory: SourceSetFactory,
 ) {
     private val edtSourceSet: SourceSet = sourceSetFactory.createEdtSourceSet()
     private val designerSourceSet: SourceSet = sourceSetFactory.createDesignerSourceSet()
