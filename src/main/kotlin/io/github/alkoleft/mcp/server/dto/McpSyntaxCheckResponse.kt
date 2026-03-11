@@ -21,6 +21,7 @@
 
 package io.github.alkoleft.mcp.server.dto
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import io.github.alkoleft.mcp.application.services.validation.Issue
 
 /**
@@ -34,6 +35,7 @@ import io.github.alkoleft.mcp.application.services.validation.Issue
  * @param checkResult Результат проверки
  * @param errors Список ошибок выполнения
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class McpSyntaxCheckResponse(
     val success: Boolean,
     val message: String,

@@ -21,8 +21,7 @@
 
 package io.github.alkoleft.mcp.server.dto
 
-import io.github.alkoleft.mcp.application.actions.common.ActionStepResult
-import io.github.alkoleft.mcp.application.actions.test.yaxunit.GenericTestSuite
+import com.fasterxml.jackson.annotation.JsonInclude
 
 /**
  * Результат выполнения тестов в формате MCP
@@ -42,6 +41,7 @@ import io.github.alkoleft.mcp.application.actions.test.yaxunit.GenericTestSuite
  * @param enterpriseLogPath Путь к логу 1С:Предприятие
  * @param logFile Путь к файлу лога выполнения тестов
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class McpTestResponse(
     val success: Boolean,
     val message: String,
@@ -49,9 +49,6 @@ data class McpTestResponse(
     val passedTests: Int? = null,
     val failedTests: Int? = null,
     val executionTime: Long? = null,
-    val testDetail: List<GenericTestSuite>? = null,
-    val steps: List<ActionStepResult>? = null,
-    val errors: List<String>,
     val enterpriseLogPath: String? = null,
     val logFile: String? = null,
 )

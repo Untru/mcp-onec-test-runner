@@ -21,6 +21,7 @@
 
 package io.github.alkoleft.mcp.server.dto
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import io.github.alkoleft.mcp.application.actions.common.ActionStepResult
 
 /**
@@ -34,6 +35,7 @@ import io.github.alkoleft.mcp.application.actions.common.ActionStepResult
  * @param buildTime Время выполнения сборки в миллисекундах
  * @param steps Список шагов выполнения сборки (заполняется только при ошибках для диагностики)
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class McpBuildResponse(
     val success: Boolean,
     val message: String,

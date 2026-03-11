@@ -39,6 +39,7 @@ data class ApplicationProperties(
     val connection: ConnectionProperties = ConnectionProperties(),
     val platformVersion: String = "",
     val tools: ToolsProperties = ToolsProperties(),
+    val build: BuildProperties = BuildProperties(),
 ) {
     /**
      * Очищать лог перед каждым выполнением tool.
