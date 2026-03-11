@@ -27,6 +27,17 @@ package io.github.alkoleft.mcp.configuration.properties
 data class ToolsProperties(
     val builder: BuilderType = BuilderType.DESIGNER,
     val edtCli: EdtCliProperties = EdtCliProperties(),
+    val enterprise: EnterpriseProperties = EnterpriseProperties(),
+)
+
+/**
+ * Настройки Enterprise (1С:Предприятие)
+ */
+data class EnterpriseProperties(
+    /**
+     * Дополнительные ключи запуска (например, "/TESTMANAGER")
+     */
+    val additionalLaunchKeys: List<String> = emptyList(),
 )
 
 /**

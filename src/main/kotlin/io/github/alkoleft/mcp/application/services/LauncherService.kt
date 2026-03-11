@@ -21,6 +21,7 @@
 
 package io.github.alkoleft.mcp.application.services
 
+import io.github.alkoleft.mcp.application.actions.change.SourceSetChanges
 import io.github.alkoleft.mcp.application.actions.common.ActionStepResult
 import io.github.alkoleft.mcp.application.actions.common.BuildAction
 import io.github.alkoleft.mcp.application.actions.common.BuildResult
@@ -49,6 +50,9 @@ import kotlin.time.TimeSource
 
 private val logger = KotlinLogging.logger { }
 
+private const val BUILD_REQUIRED_BEFORE_TESTS_MESSAGE =
+    "Обнаружены изменения в исходниках. Сперва нужно воспользоваться инструментом build_project, а затем запускать тесты"
+
 @Service
 class LauncherService(
     private val buildAction: BuildAction,
@@ -58,11 +62,8 @@ class LauncherService(
     private val reportParser: ReportParser,
     private val yaxUnitRunner: YaXUnitRunner,
     private val properties: ApplicationProperties,
-    private val sourceSetFactory: SourceSetFactory,
+    private val sourceSetsService: SourceSetsService,
 ) {
-    private val edtSourceSet: SourceSet = sourceSetFactory.createEdtSourceSet()
-    private val designerSourceSet: SourceSet = sourceSetFactory.createDesignerSourceSet()
-
     fun runTests(request: TestExecutionRequest): RunTestResult {
         val start = TimeSource.Monotonic.markNow()
         val buildResult = build()
@@ -102,7 +103,7 @@ class LauncherService(
         logger.info { "Обнаружены изменения: ${changedSourceSets.joinToString { it.name }}" }
 
         if (properties.format == ProjectFormat.EDT) {
-            val convertResult = convertSources(changedSourceSets, designerSourceSet)
+            val convertResult = convertSources(changedSourceSets)
             steps.addAll(convertResult.steps)
             if (!convertResult.success) {
                 return BuildResult(
@@ -116,7 +117,7 @@ class LauncherService(
             }
         }
 
-        val result = updateIB(changedSourceSets)
+        val result = updateIB(changedSourceSets, changes.sourceSetChanges)
 
         var success = true
         val errors = mutableListOf<String>()
@@ -131,21 +132,34 @@ class LauncherService(
         return result.copy(steps = steps + result.steps)
     }
 
-    private fun convertSources(
-        changedSourceSets: SourceSet,
-        destination: SourceSet,
-    ): ConvertResult {
+    private fun convertSources(changedSourceSets: SourceSet): ConvertResult {
+        val edtSourceSet = sourceSetsService.getEdtSourceSet()?.sourceSet ?: SourceSet.EMPTY
+        val designerSourceSet = sourceSetsService.getDesignerSourceSet()?.sourceSet ?: SourceSet.EMPTY
+
         val convertAction: ConvertAction = EdtInteractiveConvertAction(platformDsl)
         return convertAction.run(
             properties,
             edtSourceSet.subSourceSet { changedSourceSets.find { item -> item.name == it.name } != null },
-            destination,
+            designerSourceSet,
         )
     }
 
-    private fun updateIB(changedSourceSets: SourceSet): BuildResult =
-        buildAction.run(
+    /**
+     * Обновляет информационную базу с поддержкой частичной загрузки.
+     *
+     * Автоматически выбирает режим загрузки (частичная или полная) на основе
+     * количества измененных файлов и настройки partialLoadThreshold.
+     */
+    private fun updateIB(
+        changedSourceSets: SourceSet,
+        sourceSetChanges: Map<String, SourceSetChanges>,
+    ): BuildResult {
+        val designerSourceSet = sourceSetsService.getDesignerSourceSet()?.sourceSet ?: SourceSet.EMPTY
+
+        return buildAction.runPartial(
             properties,
             designerSourceSet.subSourceSet { changedSourceSets.find { item -> item.name == it.name } != null },
+            sourceSetChanges,
         )
+    }
 }

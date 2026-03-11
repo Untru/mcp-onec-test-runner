@@ -25,6 +25,7 @@ import io.github.alkoleft.mcp.configuration.properties.ApplicationProperties
 import io.github.alkoleft.mcp.infrastructure.platform.dsl.PlatformDsl
 import io.github.alkoleft.mcp.infrastructure.platform.dsl.ibcmd.IbcmdDsl
 import io.github.alkoleft.mcp.infrastructure.platform.dsl.process.ProcessResult
+import io.github.alkoleft.mcp.infrastructure.utility.PartialLoadListGenerator
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import java.nio.file.Path
@@ -36,13 +37,12 @@ import java.nio.file.Path
 @ConditionalOnProperty(name = ["app.tools.builder"], havingValue = "IBCMD")
 class IbcmdBuildAction(
     dsl: PlatformDsl,
-) : AbstractBuildAction(dsl) {
+    partialLoadListGenerator: PartialLoadListGenerator,
+) : AbstractBuildAction(dsl, partialLoadListGenerator) {
     private lateinit var actionDsl: IbcmdDsl
 
     override fun initDsl(properties: ApplicationProperties) {
-        actionDsl =
-            dsl.ibcmd {
-            }
+        actionDsl = dsl.ibcmd { }
     }
 
     override fun loadConfiguration(
@@ -51,6 +51,25 @@ class IbcmdBuildAction(
     ): ProcessResult {
         lateinit var result: ProcessResult
         actionDsl.config { result = import(path) }
+        return result
+    }
+
+    override fun loadConfigurationPartial(
+        name: String,
+        path: Path,
+        changedFiles: Set<Path>,
+    ): ProcessResult {
+        // Для ibcmd используем подкоманду "files" и параметр --partial
+        // ibcmd infobase config import files --partial <path>
+        lateinit var result: ProcessResult
+        actionDsl.config {
+            result =
+                import(path) {
+                    importSubCommand = "files"
+                    partial = true
+                    baseDir = path.toString()
+                }
+        }
         return result
     }
 
@@ -63,6 +82,25 @@ class IbcmdBuildAction(
             result =
                 import(path) {
                     extension = name
+                }
+        }
+        return result
+    }
+
+    override fun loadExtensionPartial(
+        name: String,
+        path: Path,
+        changedFiles: Set<Path>,
+    ): ProcessResult {
+        // Для ibcmd используем подкоманду "files" и параметр --partial с расширением
+        lateinit var result: ProcessResult
+        actionDsl.config {
+            result =
+                import(path) {
+                    extension = name
+                    importSubCommand = "files"
+                    partial = true
+                    baseDir = path.toString()
                 }
         }
         return result

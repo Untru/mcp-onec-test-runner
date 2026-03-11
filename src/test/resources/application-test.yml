@@ -8,39 +8,37 @@
 app:
   id: test
   # Базовый путь к проекту
-  base-path: "~/Загрузки/sources/"
+  base-path: "/home/alko/develop/open-source/ai/mcp/onec-client-mcp-devkit"
 
   # Набор исходного кода проекта
   source-set:
-    # Основная конфигурация YAxUnit (движок)
-    - path: "configuration"
-      name: demo
-      type: "CONFIGURATION"
-      purpose: [ "TESTS" ]
-
-    # Основная конфигурация YAxUnit (движок)
-    - path: "yaxunit"
-      name: yaxunit
-      type: "EXTENSION"
-      purpose: [ "MAIN", "YAXUNIT" ]
-
-    # Тесты YAxUnit
-    - path: "tests"
+    - path: fixtures/configuration
+      name: configuration
+      type: CONFIGURATION
+      purpose: [MAIN]
+    - path: exts/client-mcp
+      name: ClientMcp
+      type: EXTENSION
+      purpose: [MAIN]
+    - path: tests/src
       name: tests
-      type: "EXTENSION"
-      purpose: [ "TESTS", "YAXUNIT" ]
+      type: EXTENSION
+      purpose: [TESTS, YAXUNIT]
 
   # Настройки подключения к информационной базе
   connection:
-    connection-string: "File='/home/common/develop/file-data-base/YAxUnit/';"
+    connection-string: "File='/home/alko/develop/onec_file_db/client-mcp';"
 
   # Версия платформы из v8config.json
-  platform-version: "8.3.22.1709"
+  platform-version: "8.5.1.1150"
 
   # Настройки инструментов
   tools:
     # Тип сборщика: DESIGNER или IBCMD
     builder: DESIGNER
+    enterprise:
+      additional-launch-keys:
+        - "/TESTMANAGER"
 
 logging:
   level:

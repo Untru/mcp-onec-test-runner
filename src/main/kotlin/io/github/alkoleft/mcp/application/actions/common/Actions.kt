@@ -37,14 +37,10 @@ import kotlin.time.Duration
  * Определяет контракт для выполнения сборки проекта 1С:Предприятие.
  * Реализации этого интерфейса могут использовать различные инструменты сборки
  * (например, конфигуратор или ibcmd).
- *
- * @param properties Свойства приложения, содержащие конфигурацию проекта
- * @param sourceSet Описание исходных файлов проекта (конфигурация и расширения)
- * @return Результат сборки с информацией об успешности, ошибках и времени выполнения
  */
 interface BuildAction {
     /**
-     * Выполняет сборку проекта
+     * Выполняет сборку проекта (полная загрузка)
      *
      * @param properties Свойства приложения с конфигурацией
      * @param sourceSet Описание исходных файлов проекта
@@ -53,6 +49,24 @@ interface BuildAction {
     fun run(
         properties: ApplicationProperties,
         sourceSet: SourceSet,
+    ): BuildResult
+
+    /**
+     * Выполняет сборку проекта с частичной загрузкой измененных файлов.
+     *
+     * Автоматически определяет режим загрузки (частичная или полная) на основе:
+     * - Количества измененных файлов (сравнение с порогом partialLoadThreshold)
+     * - Наличия изменений в Configuration.xml
+     *
+     * @param properties Свойства приложения с конфигурацией
+     * @param sourceSet Описание исходных файлов проекта
+     * @param sourceSetChanges Изменения, сгруппированные по source set
+     * @return Результат сборки
+     */
+    fun runPartial(
+        properties: ApplicationProperties,
+        sourceSet: SourceSet,
+        sourceSetChanges: Map<String, SourceSetChanges>,
     ): BuildResult
 }
 
@@ -84,11 +98,6 @@ data class BuildResult(
  *
  * Определяет контракт для конвертации проектов из одного формата в другой
  * (например, из формата EDT в формат DESIGNER).
- *
- * @param properties Свойства приложения
- * @param sourceSet Исходный source set для конвертации
- * @param destination Целевой source set для результата конвертации
- * @return Результат конвертации
  */
 interface ConvertAction {
     /**
@@ -311,4 +320,97 @@ data class LaunchResult(
     override val errors: List<String>,
     override val steps: List<ActionStepResult> = emptyList(),
     val processId: Long? = null,
+) : ActionResult
+
+/**
+ * Режим выгрузки конфигурации
+ */
+enum class DumpMode {
+    /** Полная выгрузка всей конфигурации */
+    FULL,
+
+    /** Инкрементальная выгрузка только измененных объектов (требует ConfigDumpInfo.xml) */
+    INCREMENTAL,
+
+    /** Частичная выгрузка конкретных объектов по списку */
+    PARTIAL,
+}
+
+/**
+ * Интерфейс для выгрузки конфигурации из ИБ в файлы
+ *
+ * Определяет контракт для выгрузки конфигурации 1С:Предприятие из информационной базы
+ * в файлы проекта. Реализации этого интерфейса могут использовать различные инструменты
+ * (например, конфигуратор или ibcmd).
+ */
+interface DumpAction {
+    /**
+     * Выполняет полную выгрузку конфигурации
+     *
+     * @param properties Свойства приложения с конфигурацией
+     * @param sourceSet Описание целевого каталога проекта
+     * @param extension Имя расширения для выгрузки (null - основная конфигурация)
+     * @return Результат выгрузки
+     */
+    fun run(
+        properties: ApplicationProperties,
+        sourceSet: SourceSet,
+        extension: String? = null,
+    ): DumpResult
+
+    /**
+     * Выполняет инкрементальную выгрузку только измененных объектов
+     *
+     * Использует ConfigDumpInfo.xml для определения изменений между конфигурацией в ИБ
+     * и выгруженными файлами. Выгружает только объекты, которые были изменены.
+     *
+     * @param properties Свойства приложения с конфигурацией
+     * @param sourceSet Описание целевого каталога проекта
+     * @param extension Имя расширения для выгрузки (null - основная конфигурация)
+     * @return Результат выгрузки
+     */
+    fun runIncremental(
+        properties: ApplicationProperties,
+        sourceSet: SourceSet,
+        extension: String? = null,
+    ): DumpResult
+
+    /**
+     * Выполняет частичную выгрузку конкретных объектов по списку
+     *
+     * @param properties Свойства приложения с конфигурацией
+     * @param sourceSet Описание целевого каталога проекта
+     * @param objects Список объектов метаданных для выгрузки (например, "Справочник.Номенклатура")
+     * @param extension Имя расширения для выгрузки (null - основная конфигурация)
+     * @return Результат выгрузки
+     */
+    fun runPartial(
+        properties: ApplicationProperties,
+        sourceSet: SourceSet,
+        objects: List<String>,
+        extension: String? = null,
+    ): DumpResult
+}
+
+/**
+ * Результат выгрузки конфигурации
+ *
+ * Содержит информацию о результатах выгрузки конфигурации из ИБ в файлы.
+ *
+ * @param message Сообщение о результате выгрузки
+ * @param success Успешность выгрузки (true, если выгрузка завершилась без ошибок)
+ * @param mode Режим выгрузки, который был использован
+ * @param errors Список ошибок, возникших во время выгрузки
+ * @param duration Время выполнения выгрузки
+ * @param steps Список шагов выполнения выгрузки для диагностики
+ * @param dumpedObjects Количество выгруженных объектов (если известно)
+ */
+data class DumpResult(
+    override val message: String,
+    override val success: Boolean,
+    val mode: DumpMode,
+    override val errors: List<String> = emptyList(),
+    override val duration: Duration = Duration.ZERO,
+    override val steps: List<ActionStepResult> = emptyList(),
+    val dumpedObjects: Int? = null,
 ) : ActionResult

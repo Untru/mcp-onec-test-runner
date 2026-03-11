@@ -104,4 +104,11 @@ interface V8ContextConfig {
      * Устанавливает флаг не очищать файл вывода при записи
      */
     fun noTruncate()
+
+    /**
+     * Добавляет дополнительные ключи запуска
+     *
+     * @param keys список дополнительных ключей (например, "/TESTMANAGER")
+     */
+    fun addLaunchKeys(keys: List<String>)
 }

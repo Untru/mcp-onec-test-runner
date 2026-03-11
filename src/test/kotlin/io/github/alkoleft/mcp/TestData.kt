@@ -30,9 +30,9 @@ import io.github.alkoleft.mcp.configuration.properties.SourceSetType
 import io.github.alkoleft.mcp.configuration.properties.ToolsProperties
 import kotlin.io.path.Path
 
-const val SOURCE_PATH = "/home/alko/develop/temp/yaxunit-designer"
-const val IB_PATH = "/home/alko/develop/onec_file_db/YaxUnit-dev"
-const val VERSION = "8.3.22.1709"
+const val SOURCE_PATH = "/home/alko/develop/open-source/ai/mcp/onec-client-mcp-devkit"
+const val IB_PATH = "/home/alko/develop/onec_file_db/client-mcp"
+const val VERSION = "8.5.1.1150"
 
 /**
  * Создает тестовые свойства приложения для тестирования
@@ -45,16 +45,16 @@ fun testApplicationProperties(): ApplicationProperties =
                 items =
                     listOf(
                         SourceSetItem(
-                            path = "configuration",
+                            path = "fixtures/configuration",
                             name = "configuration",
                             type = SourceSetType.CONFIGURATION,
                             purpose = setOf(SourceSetPurpose.MAIN),
                         ),
                         SourceSetItem(
-                            path = "yaxunit",
-                            name = "yaxunit",
+                            path = "exts/client-mcp",
+                            name = "client-mcp",
                             type = SourceSetType.EXTENSION,
-                            purpose = setOf(SourceSetPurpose.YAXUNIT),
+                            purpose = setOf(SourceSetPurpose.MAIN),
                         ),
                         SourceSetItem(
                             path = "tests",

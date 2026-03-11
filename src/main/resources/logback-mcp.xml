@@ -29,6 +29,7 @@
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_FILE}</file>
         <encoder>
+            <charset>UTF-8</charset>
             <pattern>%d{HH:mm:ss.SSS} %-5level - %msg%n</pattern>
         </encoder>
 

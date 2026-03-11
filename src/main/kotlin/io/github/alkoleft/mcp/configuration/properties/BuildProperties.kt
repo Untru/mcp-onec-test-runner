@@ -19,20 +19,17 @@
  * along with METR.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.alkoleft.mcp.server.dto
-
-import com.fasterxml.jackson.annotation.JsonInclude
+package io.github.alkoleft.mcp.configuration.properties
 
 /**
- * Результат запуска приложения в формате MCP
- *
- * Содержит информацию о результатах запуска приложения 1С:Предприятие.
- *
- * @param success Успешность запуска (true, если приложение запущено успешно)
- * @param message Сообщение о результате запуска (может содержать PID процесса или описание ошибки)
+ * Настройки сборки проекта
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
-data class McpLaunchResponse(
-    val success: Boolean,
-    val message: String,
+data class BuildProperties(
+    /**
+     * Порог количества файлов для переключения на частичную загрузку.
+     * Если количество измененных файлов меньше этого значения,
+     * будет использована частичная загрузка (partial load).
+     * По умолчанию: 20 файлов
+     */
+    val partialLoadThreshold: Int = 20,
 )

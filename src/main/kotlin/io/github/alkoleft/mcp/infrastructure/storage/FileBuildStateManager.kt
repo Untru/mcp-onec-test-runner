@@ -23,151 +23,89 @@ package io.github.alkoleft.mcp.infrastructure.storage
 
 import io.github.alkoleft.mcp.application.actions.change.ChangesSet
 import io.github.alkoleft.mcp.application.actions.test.yaxunit.ChangeType
-import io.github.alkoleft.mcp.configuration.properties.ApplicationProperties
+import io.github.alkoleft.mcp.infrastructure.changes.Scanner
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapMerge
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.toSet
-import org.springframework.stereotype.Component
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.walk
 
+private val logger = KotlinLogging.logger { }
+
 /**
  * Build state manager implementing Enhanced Hybrid Hash Detection algorithm.
  * Combines fast timestamp pre-filtering with accurate hash verification for optimal performance.
  */
-private val logger = KotlinLogging.logger { }
-
-@Component
 class FileBuildStateManager(
-    private val hashStorage: MapDbHashStorage,
-    private val properties: ApplicationProperties,
+    private val sourceSetContext: SourceSetContext,
+    private val scanner: Scanner,
 ) {
-    // Performance tuning parameters
-    private val maxConcurrentHashCalculations = 4
+    private val hashStorage: HashStorage
+        get() = sourceSetContext.hashStorage
 
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun checkChanges(): ChangesSet {
         val startTime = Instant.now()
-        logger.debug { "Анализ изменений: ${properties.basePath}" }
+        logger.debug { "Анализ изменений: ${sourceSetContext.basePath}" }
 
         try {
             // Phase 1: Fast timestamp pre-scan
             val candidateFiles =
-                properties.sourceSet
+                sourceSetContext.sourceSet
                     .asFlow()
-                    .flatMapMerge { scanForPotentialChanges(properties.basePath.resolve(it.path), it.name) }
-                    .toSet()
-
-            logger.debug { "Фаза 1: Найдено ${candidateFiles.size} потенциальных изменений после сканирования временных меток" }
-
-            if (candidateFiles.isEmpty()) {
-                logger.debug { "Потенциальные изменения не обнаружены - пропуск проверки хешей" }
-                return emptyMap()
-            }
+                    .flowOn(Dispatchers.IO)
+                    .flatMapMerge {
+                        scanner
+                            .scanByLastModifiedTime(
+                                sourceSetContext.basePath.resolve(it.path),
+                                hashStorage.getSourceSetTimestamp(),
+                            ).asFlow()
+                    }
 
             // Phase 2: Hash verification for potential changes
             val actualChanges = verifyChangesWithHashes(candidateFiles)
 
             val duration = java.time.Duration.between(startTime, Instant.now())
             logger.info {
-                "Обнаружение изменений завершено за ${duration.toMillis()}мс: ${actualChanges.size} фактических изменений из ${candidateFiles.size} кандидатов"
+                "Обнаружение изменений завершено за ${duration.toMillis()}мс: ${actualChanges.size} фактических изменений"
             }
 
             return actualChanges
         } catch (e: Exception) {
             logger.error(e) { "Ошибка при обнаружении изменений" }
             // Fallback: treat all source files as changed
-            return getAllSourceFiles(properties.basePath).associateWith { Pair(ChangeType.MODIFIED, "") }
+            return getAllSourceFiles(sourceSetContext.basePath).associateWith { Pair(ChangeType.MODIFIED, "") }
         }
     }
 
     fun updateHashes(files: Map<Path, String>) {
-        try {
-            hashStorage.batchUpdate(files)
-        } catch (e: Exception) {
-            logger.error(e) { "Не удалось обновить хеши файлов" }
-            throw e
-        }
+        sourceSetContext.hashStorage.batchUpdate(files)
     }
 
-    fun storeTimestamp(
-        sourceSetName: String,
-        timeStamp: Long,
-    ) {
-        hashStorage.storeTimestamp(sourceSetName, timeStamp)
-    }
-
-    /**
-     * Phase 1: Fast timestamp pre-scan to identify potential changes
-     */
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private suspend fun scanForPotentialChanges(
-        projectPath: Path,
-        projectName: String,
-    ): Flow<Path> {
-        logger.debug { "Сканирование изменений временных меток в: $projectPath" }
-
-        val sourceFiles = getAllSourceFiles(projectPath)
-        val projectTimestamp = hashStorage.getSourceSetTimestamp(projectName)
-
-        return sourceFiles
-            .asFlow()
-            .flowOn(Dispatchers.IO)
-            .flatMapMerge { file ->
-                flow {
-                    try {
-                        val currentTimestamp = Files.getLastModifiedTime(file).toMillis()
-
-                        when {
-                            projectTimestamp == null -> {
-                                // New file
-                                logger.trace { "Обнаружен новый файл: $file" }
-                                emit(file)
-                            }
-
-                            currentTimestamp > projectTimestamp -> {
-                                // Potentially modified file
-                                logger.trace {
-                                    "Потенциально измененный файл: $file (текущая: $currentTimestamp, сохраненная: $projectTimestamp)"
-                                }
-                                emit(file)
-                            }
-                        }
-                    } catch (e: Exception) {
-                        logger.debug(e) { "Ошибка при проверке временной метки для файла: $file" }
-                        emit(file) // Include in potential changes if we can't verify
-                    }
-                }
-            }
+    fun storeTimestamp(timeStamp: Long) {
+        sourceSetContext.hashStorage.storeTimestamp(timeStamp)
     }
 
     /**
      * Phase 2: Hash verification for potential changes with parallel processing
      */
-    private suspend fun verifyChangesWithHashes(candidates: Set<Path>): ChangesSet {
-        logger.debug { "Проверка ${candidates.size} потенциальных изменений с вычислением хешей" }
+    private suspend fun verifyChangesWithHashes(candidates: Flow<Path>): ChangesSet {
+        logger.debug { "Проверка потенциальных изменений с вычислением хешей" }
 
-        // Process files in batches to avoid overwhelming the system
-        val batchSize = maxConcurrentHashCalculations
         val results = mutableMapOf<Path, Pair<ChangeType, String>>()
 
-        candidates.chunked(batchSize).forEach { batch ->
-            val batchResults = batch.map(::verifyFileChange)
+        candidates.collect { file ->
+            val result = verifyFileChange(file)
 
-            // Collect results
-            batch.zip(batchResults).forEach { (file, result) ->
-                if (result.first != ChangeType.UNCHANGED) {
-                    results[file] = result
-                }
+            if (result.first != ChangeType.UNCHANGED) {
+                results[file] = result
             }
         }
 

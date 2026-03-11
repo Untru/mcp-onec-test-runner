@@ -22,11 +22,21 @@
 package io.github.alkoleft.mcp
 
 import io.github.alkoleft.mcp.application.actions.build.DesignerBuildAction
+import io.github.alkoleft.mcp.application.actions.convert.EdtInteractiveConvertAction
 import io.github.alkoleft.mcp.application.actions.test.yaxunit.RunAllTestsRequest
 import io.github.alkoleft.mcp.application.actions.test.yaxunit.RunListTestsRequest
 import io.github.alkoleft.mcp.application.actions.test.yaxunit.RunModuleTestsRequest
 import io.github.alkoleft.mcp.application.actions.test.yaxunit.YaXUnitTestAction
+import io.github.alkoleft.mcp.configuration.properties.ApplicationProperties
+import io.github.alkoleft.mcp.configuration.properties.BuilderType
+import io.github.alkoleft.mcp.configuration.properties.ConnectionProperties
+import io.github.alkoleft.mcp.configuration.properties.SourceSet
+import io.github.alkoleft.mcp.configuration.properties.SourceSetItem
+import io.github.alkoleft.mcp.configuration.properties.SourceSetPurpose
+import io.github.alkoleft.mcp.configuration.properties.SourceSetType
+import io.github.alkoleft.mcp.configuration.properties.ToolsProperties
 import io.github.alkoleft.mcp.infrastructure.platform.dsl.PlatformDsl
+import io.github.alkoleft.mcp.infrastructure.utility.PartialLoadListGenerator
 import io.github.alkoleft.mcp.infrastructure.yaxunit.ReportParser
 import io.github.alkoleft.mcp.infrastructure.yaxunit.YaXUnitRunner
 import org.junit.jupiter.api.Test
@@ -34,9 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import kotlin.io.path.Path
-import kotlin.test.Ignore
 
-@Ignore
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.NONE,
 )
@@ -46,6 +54,53 @@ class RealTests(
     @Autowired private val reportParser: ReportParser,
     @Autowired private val runner: YaXUnitRunner,
 ) {
+    companion object {
+        const val SOURCE_PATH = "/home/alko/develop/temp/yaxunit-designer"
+        const val IB_PATH = "/home/alko/develop/onec_file_db/YaxUnit-dev"
+        const val VERSION = "8.5.1.1150"
+
+        const val EDT_SOURCE_PATH = "/home/alko/develop/open-source/ai/mcp/onec-client-mcp-devkit"
+        const val EDT_WORKING_DIR = "/home/alko/develop/EDT_WS/client-mcp-ai"
+
+        fun edtApplicationProperties(): ApplicationProperties =
+            ApplicationProperties(
+                basePath = Path(EDT_SOURCE_PATH),
+                sourceSet =
+                    SourceSet(
+                        items =
+                            listOf(
+                                SourceSetItem(
+                                    path = "fixtures/configuration",
+                                    name = "configuration",
+                                    type = SourceSetType.CONFIGURATION,
+                                    purpose = setOf(SourceSetPurpose.MAIN),
+                                ),
+                                SourceSetItem(
+                                    path = "exts/client-mcp",
+                                    name = "ClientMcp",
+                                    type = SourceSetType.EXTENSION,
+                                    purpose = setOf(SourceSetPurpose.MAIN),
+                                ),
+                                SourceSetItem(
+                                    path = "tests/src",
+                                    name = "tests",
+                                    type = SourceSetType.EXTENSION,
+                                    purpose = setOf(SourceSetPurpose.TESTS, SourceSetPurpose.YAXUNIT),
+                                ),
+                            ),
+                    ),
+                connection =
+                    ConnectionProperties(
+                        connectionString = "File='$IB_PATH';",
+                    ),
+                platformVersion = VERSION,
+                tools =
+                    ToolsProperties(
+                        builder = BuilderType.DESIGNER,
+                    ),
+            )
+    }
+
     @Test
     fun designerRealExecute() {
         platformDsl.designer {
@@ -84,7 +139,7 @@ class RealTests(
     // Тесты для DesignerBuildAction
     @Test
     fun designerBuildActionFullBuild() {
-        val action = DesignerBuildAction(platformDsl)
+        val action = DesignerBuildAction(platformDsl, PartialLoadListGenerator())
         val properties = testApplicationProperties()
 
         val result = action.run(properties, properties.sourceSet)
@@ -125,5 +180,29 @@ class RealTests(
 
         println("=== Запуск одного теста: '$testName' ===")
         action.run(RunListTestsRequest(listOf(testName)))
+    }
+
+    // Тест конвертации EDT
+    @Test
+    fun edtConvert() {
+        val convertAction = EdtInteractiveConvertAction(platformDsl)
+        val properties = edtApplicationProperties()
+
+        val edtSourceSet =
+            SourceSet(
+                items =
+                    listOf(
+                        SourceSetItem(
+                            path = "fixtures/configuration",
+                            name = "configuration",
+                            type = SourceSetType.CONFIGURATION,
+                            purpose = setOf(SourceSetPurpose.MAIN),
+                        ),
+                    ),
+            )
+        val designerSourceSet = properties.sourceSet
+
+        val result = convertAction.run(properties, edtSourceSet, designerSourceSet)
+        println("Результат конвертации: $result")
     }
 }

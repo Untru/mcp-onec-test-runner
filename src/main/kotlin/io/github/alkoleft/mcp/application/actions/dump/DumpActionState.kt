@@ -19,11 +19,11 @@
  * along with METR.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.alkoleft.mcp.application.actions.build
+package io.github.alkoleft.mcp.application.actions.dump
 
 import io.github.alkoleft.mcp.application.actions.common.ActionState
-import io.github.alkoleft.mcp.application.actions.common.BuildResult
-import io.github.alkoleft.mcp.application.actions.common.fullError
+import io.github.alkoleft.mcp.application.actions.common.DumpMode
+import io.github.alkoleft.mcp.application.actions.common.DumpResult
 import io.github.alkoleft.mcp.application.actions.common.toActionStepResult
 import io.github.alkoleft.mcp.infrastructure.platform.dsl.process.ProcessResult
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -31,28 +31,30 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 private val logger = KotlinLogging.logger { }
 
 /**
- * Состояние выполнения сборки проекта
+ * Состояние выполнения выгрузки конфигурации
  *
- * Отслеживает результаты выполнения команд для каждого элемента source set
- * и результаты обновления базы данных.
+ * Отслеживает результаты выполнения команд выгрузки.
  */
-class BuildActionState : ActionState(logger) {
-    val sourceSet = mutableMapOf<String, ProcessResult>()
-    var updateResult: ProcessResult? = null
+class DumpActionState(
+    private val mode: DumpMode,
+) : ActionState(logger) {
+    private var dumpResult: ProcessResult? = null
+    private var dumpedObjects: Int? = null
 
     /**
-     * Добавляет результат выполнения команды для элемента source set
+     * Регистрирует результат выгрузки
      *
-     * @param name Имя элемента source set
      * @param result Результат выполнения команды
      * @param description Описание операции
+     * @param objectsCount Количество выгруженных объектов (если известно)
      */
-    fun addResult(
-        name: String,
+    fun registerDumpResult(
         result: ProcessResult,
         description: String,
+        objectsCount: Int? = null,
     ) {
-        sourceSet[name] = result
+        dumpResult = result
+        dumpedObjects = objectsCount
         if (!result.success) {
             success = false
         }
@@ -60,35 +62,22 @@ class BuildActionState : ActionState(logger) {
     }
 
     /**
-     * Регистрирует результат обновления базы данных
-     *
-     * @param result Результат выполнения команды обновления
-     */
-    fun registerUpdateResult(result: ProcessResult) {
-        updateResult = result
-        if (!result.success) {
-            success = false
-        }
-        addStep(result.toActionStepResult("Обновление конфигурации"))
-    }
-
-    /**
-     * Преобразует состояние в результат сборки
+     * Преобразует состояние в результат выгрузки
      *
      * @param message Базовое сообщение о результате
-     * @return Результат сборки проекта
+     * @return Результат выгрузки конфигурации
      */
-    fun toResult(message: String): BuildResult {
+    fun toResult(message: String): DumpResult {
         val errors = mutableListOf<String>()
-        errors.addAll(sourceSet.values.mapNotNull { it.fullError() })
-        updateResult?.fullError()?.let(errors::add)
+        dumpResult?.error?.let(errors::add)
 
-        return BuildResult(
+        return DumpResult(
             message = message + if (success) " успешно" else " неудачно",
             success = success,
+            mode = mode,
             errors = errors,
-            sourceSet = sourceSet,
             steps = steps.toList(),
+            dumpedObjects = dumpedObjects,
         )
     }
 }
