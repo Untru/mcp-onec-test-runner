@@ -1,0 +1,6 @@
+# Graduate wrapper
+gradlew text eol=lf
+gradlew.bat text eol=crlf
+
+# Kotlin files
+*.kt text eol=lf

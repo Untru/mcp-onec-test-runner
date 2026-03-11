@@ -74,7 +74,7 @@ class FileBuildStateManager(
 
             val duration = java.time.Duration.between(startTime, Instant.now())
             logger.info {
-                "Обнаружение изменений завершено за ${duration.toMillis()}мс: ${actualChanges.size} фактических изменений из ${candidateFiles.size} кандидатов"
+                "Обнаружение изменений завершено за ${duration.toMillis()}мс: ${actualChanges.size} фактических изменений"
             }
 
             return actualChanges

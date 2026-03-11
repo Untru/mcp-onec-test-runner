@@ -55,6 +55,9 @@ abstract class V8Context(
     /** Флаг не очищать файл вывода при записи */
     protected var noTruncate: Boolean = false
 
+    /** Дополнительные ключи запуска */
+    protected var additionalLaunchKeys: List<String> = emptyList()
+
     /**
      * Устанавливает строку подключения
      *
@@ -153,6 +156,13 @@ abstract class V8Context(
     }
 
     /**
+     * Добавляет дополнительные ключи запуска
+     */
+    override fun addLaunchKeys(keys: List<String>) {
+        this.additionalLaunchKeys = keys
+    }
+
+    /**
      * Строит общие аргументы для команд утилит платформы
      *
      * @param utilityType тип утилиты
@@ -189,6 +199,9 @@ abstract class V8Context(
 
         if (disableStartupDialogs) args.add("/DisableStartupDialogs")
         if (disableStartupMessages) args.add("/DisableStartupMessages")
+
+        // Дополнительные ключи запуска
+        additionalLaunchKeys.forEach { args.add(it) }
 
         return args
     }

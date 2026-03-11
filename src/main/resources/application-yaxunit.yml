@@ -39,3 +39,9 @@ app:
   tools:
     # Тип сборщика: DESIGNER или IBCMD
     builder: DESIGNER
+
+    # Настройки Enterprise (1С:Предприятие)
+    enterprise:
+      # Дополнительные ключи запуска
+      additional-launch-keys:
+        - "/TESTMANAGER"
