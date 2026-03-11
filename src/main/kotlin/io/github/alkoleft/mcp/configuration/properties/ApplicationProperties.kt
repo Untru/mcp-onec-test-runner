@@ -40,6 +40,13 @@ data class ApplicationProperties(
     val platformVersion: String = "",
     val tools: ToolsProperties = ToolsProperties(),
 ) {
+    /**
+     * Очищать лог перед каждым выполнением tool.
+     * Можно задать через переменную окружения CLEAN_BEFORE_EXECUTION
+     */
+    val cleanLogBeforeExecution: Boolean by lazy {
+        System.getenv("CLEAN_BEFORE_EXECUTION")?.toBoolean() ?: false
+    }
     val workPath: Path by lazy {
         val path =
             if (id != null && id.isNotBlank()) {

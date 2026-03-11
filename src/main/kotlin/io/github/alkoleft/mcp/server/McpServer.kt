@@ -29,6 +29,8 @@ import io.github.alkoleft.mcp.application.services.DesignerModulesCheckRequest
 import io.github.alkoleft.mcp.application.services.EdtCheckRequest
 import io.github.alkoleft.mcp.application.services.LauncherService
 import io.github.alkoleft.mcp.application.services.SyntaxCheckService
+import io.github.alkoleft.mcp.configuration.properties.ApplicationProperties
+import io.github.alkoleft.mcp.infrastructure.log.LogManager
 import io.github.alkoleft.mcp.server.dto.McpBuildResponse
 import io.github.alkoleft.mcp.server.dto.McpLaunchResponse
 import io.github.alkoleft.mcp.server.dto.McpSyntaxCheckResponse
@@ -62,6 +64,8 @@ private val logger = KotlinLogging.logger { }
 class McpServer(
     private val launcherService: LauncherService,
     private val syntaxCheckService: SyntaxCheckService,
+    private val properties: ApplicationProperties,
+    private val logManager: LogManager,
 ) {
     /**
      * Запускает все тесты в проекте
@@ -82,6 +86,7 @@ class McpServer(
         description = "Запускает все тесты YaXUnit в проекте. Возвращает подробный отчет о выполнении тестов.",
     )
     fun runAllTests(): McpTestResponse {
+        logManager.cleanLogIfEnabled(properties.cleanLogBeforeExecution)
         logger.info { "Запуск всех тестов YaXUnit" }
 
         try {
@@ -120,6 +125,7 @@ class McpServer(
     fun runModuleTests(
         @ToolParam(description = "Имя модуля для тестирования") moduleName: String,
     ): McpTestResponse {
+        logManager.cleanLogIfEnabled(properties.cleanLogBeforeExecution)
         logger.info { "Запуск тестов модуля: $moduleName" }
 
         try {
@@ -156,6 +162,7 @@ class McpServer(
         description = "Выполняет сборку проекта YaXUnit. Возвращает результат сборки.",
     )
     fun buildProject(): McpBuildResponse {
+        logManager.cleanLogIfEnabled(properties.cleanLogBeforeExecution)
         logger.info { "Выполнение сборки проекта" }
 
         try {
@@ -212,6 +219,7 @@ class McpServer(
     fun launchUtility(
         @ToolParam(description = "Псевдоним типа приложения для запуска") utilityType: String,
     ): McpLaunchResponse {
+        logManager.cleanLogIfEnabled(properties.cleanLogBeforeExecution)
         logger.info { "Запуск приложения с псевдонимом: $utilityType" }
         try {
             val result = launcherService.launch(LaunchRequest(utilityType))
@@ -252,6 +260,7 @@ class McpServer(
             required = false,
         ) projectName: String?,
     ): McpSyntaxCheckResponse {
+        logManager.cleanLogIfEnabled(properties.cleanLogBeforeExecution)
         logger.info { "Запуск синтаксис-проверки через ЕДТ" }
 
         return try {
@@ -336,6 +345,7 @@ class McpServer(
         @ToolParam(description = "Проверять только расширение с указанным именем", required = false) extension: String? = null,
         @ToolParam(description = "Проверять все расширения", required = false) allExtensions: Boolean?,
     ): McpSyntaxCheckResponse {
+        logManager.cleanLogIfEnabled(properties.cleanLogBeforeExecution)
         logger.info { "Запуск синтаксис-проверки через Конфигуратор (CheckConfig)" }
 
         return try {
@@ -414,6 +424,7 @@ class McpServer(
         @ToolParam(description = "Проверять только расширение с указанным именем", required = false) extension: String? = null,
         @ToolParam(description = "Проверять все расширения", required = false) allExtensions: Boolean?,
     ): McpSyntaxCheckResponse {
+        logManager.cleanLogIfEnabled(properties.cleanLogBeforeExecution)
         logger.info { "Запуск синтаксис-проверки через Конфигуратор (CheckModules)" }
 
         return try {
