@@ -23,6 +23,7 @@ package io.github.alkoleft.mcp.application.actions.build
 
 import io.github.alkoleft.mcp.application.actions.common.ActionState
 import io.github.alkoleft.mcp.application.actions.common.BuildResult
+import io.github.alkoleft.mcp.application.actions.common.fullError
 import io.github.alkoleft.mcp.application.actions.common.toActionStepResult
 import io.github.alkoleft.mcp.infrastructure.platform.dsl.process.ProcessResult
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -79,8 +80,8 @@ class BuildActionState : ActionState(logger) {
      */
     fun toResult(message: String): BuildResult {
         val errors = mutableListOf<String>()
-        errors.addAll(sourceSet.values.mapNotNull { it.error })
-        updateResult?.error?.let(errors::add)
+        errors.addAll(sourceSet.values.mapNotNull { it.fullError() })
+        updateResult?.fullError()?.let(errors::add)
 
         return BuildResult(
             message = message + if (success) " успешно" else " неудачно",

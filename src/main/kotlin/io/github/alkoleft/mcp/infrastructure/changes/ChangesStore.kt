@@ -28,7 +28,9 @@ import java.nio.file.Path
 
 private val logger = KotlinLogging.logger { }
 
-class ChangesStore(private val db: DB) {
+class ChangesStore(
+    private val db: DB,
+) {
     private val hashMap =
         db
             .hashMap("file_hashes")
@@ -63,5 +65,4 @@ class ChangesStore(private val db: DB) {
     }
 
     private fun normalizeKey(file: Path): String = file.toAbsolutePath().normalize().toString()
-
 }

@@ -49,7 +49,7 @@ private val logger = KotlinLogging.logger { }
 class FileBuildStateManager(
     private val hashStorage: MapDbHashStorage,
     private val properties: ApplicationProperties,
-    private val scanner: Scanner
+    private val scanner: Scanner,
 ) {
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun checkChanges(): ChangesSet {
@@ -63,10 +63,11 @@ class FileBuildStateManager(
                     .asFlow()
                     .flowOn(Dispatchers.IO)
                     .flatMapMerge {
-                        scanner.scanByLastModifiedTime(
-                            properties.basePath.resolve(it.path),
-                            hashStorage.getSourceSetTimestamp(it.name)
-                        ).asFlow()
+                        scanner
+                            .scanByLastModifiedTime(
+                                properties.basePath.resolve(it.path),
+                                hashStorage.getSourceSetTimestamp(it.name),
+                            ).asFlow()
                     }
 
             // Phase 2: Hash verification for potential changes

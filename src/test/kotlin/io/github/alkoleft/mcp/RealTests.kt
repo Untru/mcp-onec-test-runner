@@ -43,7 +43,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import kotlin.io.path.Path
-import kotlin.test.Ignore
 
 @SpringBootTest(
     webEnvironment = SpringBootTest.WebEnvironment.NONE,
@@ -100,6 +99,7 @@ class RealTests(
                     ),
             )
     }
+
     @Test
     fun designerRealExecute() {
         platformDsl.designer {
@@ -187,16 +187,18 @@ class RealTests(
         val convertAction = EdtInteractiveConvertAction(platformDsl)
         val properties = edtApplicationProperties()
 
-        val edtSourceSet = SourceSet(
-            items = listOf(
-                SourceSetItem(
-                    path = "fixtures/configuration",
-                    name = "configuration",
-                    type = SourceSetType.CONFIGURATION,
-                    purpose = setOf(SourceSetPurpose.MAIN),
-                ),
-            ),
-        )
+        val edtSourceSet =
+            SourceSet(
+                items =
+                    listOf(
+                        SourceSetItem(
+                            path = "fixtures/configuration",
+                            name = "configuration",
+                            type = SourceSetType.CONFIGURATION,
+                            purpose = setOf(SourceSetPurpose.MAIN),
+                        ),
+                    ),
+            )
         val designerSourceSet = properties.sourceSet
 
         val result = convertAction.run(properties, edtSourceSet, designerSourceSet)
