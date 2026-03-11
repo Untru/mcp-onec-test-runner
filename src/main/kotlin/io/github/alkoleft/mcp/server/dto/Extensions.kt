@@ -22,6 +22,7 @@
 package io.github.alkoleft.mcp.server.dto
 
 import io.github.alkoleft.mcp.application.actions.common.RunTestResult
+import io.github.alkoleft.mcp.application.actions.test.yaxunit.TestStatus
 import io.github.alkoleft.mcp.application.services.SyntaxCheckResult
 import kotlin.time.Duration
 
@@ -33,10 +34,36 @@ import kotlin.time.Duration
  * и информацию об ошибках из отчета.
  *
  * @receiver Результат выполнения тестов, полученный от LauncherService
+ * @param full Если true - возвращает полную информацию о тестах (включая пройденные тесты и полный stack trace)
  * @return MCP-ответ с результатами выполнения тестов
  */
-fun RunTestResult.toResponse() =
-    McpTestResponse(
+fun RunTestResult.toResponse(full: Boolean = false): McpTestResponse {
+    val testSuites = report?.testSuites?.let { suites ->
+        if (full) {
+            suites
+        } else {
+            // В компактном режиме оставляем только тесты со статусом FAILED или ERROR
+            suites.map { suite ->
+                suite.copy(
+                    testCases = suite.testCases
+                        .filter { it.status != TestStatus.PASSED }
+                        .map { testCase ->
+                            testCase.copy(
+                                errorMessage = testCase.errorMessage?.let { extractErrorMessage(testCase.errorMessage) },
+                                duration = null,
+                                stackTrace = null,
+                                systemOut = null,
+                                systemErr = null
+
+                            )
+                        },
+                    duration = null,
+                )
+            }.filter { it.testCases.isNotEmpty() }
+        }
+    }
+
+    return McpTestResponse(
         success = success,
         message = message,
         logFile = logPath,
@@ -45,7 +72,28 @@ fun RunTestResult.toResponse() =
         passedTests = report?.summary?.passed,
         failedTests = report?.summary?.failed,
         executionTime = duration.inWholeMilliseconds,
+        testDetail = testSuites,
+        steps = if (success) null else steps,
+        errors = errors,
     )
+}
+
+/**
+ * Извлекает первое значимое сообщение об ошибке из stack trace
+ * Убирает все строки содержащие "ОбщийМодуль.ЮТ" (внутренние модули фреймворка)
+ */
+private fun extractErrorMessage(stackTrace: String): String {
+    val lines = stackTrace.lines()
+    val relevantLines = lines
+        .filter { !it.contains("ОбщийМодуль.ЮТ") }
+        .take(5) // Берем только первые 5 значимых строк
+
+    return if (relevantLines.isEmpty()) {
+        lines.firstOrNull() ?: stackTrace.take(500)
+    } else {
+        relevantLines.joinToString("\n").take(500)
+    }
+}
 
 fun SyntaxCheckResult.toResponse(
     checkName: String,

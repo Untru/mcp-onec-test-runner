@@ -86,13 +86,15 @@ class McpServer(
         name = "run_all_tests",
         description = "Запускает все тесты YaXUnit в проекте. Возвращает подробный отчет о выполнении тестов.",
     )
-    fun runAllTests(): McpTestResponse {
+    fun runAllTests(
+        @ToolParam(description = "Включить полную информацию о тестах (включая пройденные тесты и полный stack trace)", required = false) full: Boolean? = null,
+    ): McpTestResponse {
         logger.info { "Запуск всех тестов YaXUnit" }
 
         try {
             val request = RunAllTestsRequest()
             val result = launcherService.runTests(request)
-            return result.toResponse()
+            return result.toResponse(full = full ?: false)
         } catch (e: Exception) {
             logger.error(e) { "Ошибка при запуске всех тестов" }
             return McpTestResponse(
@@ -123,13 +125,14 @@ class McpServer(
     )
     fun runModuleTests(
         @ToolParam(description = "Имя модуля для тестирования") moduleName: String,
+        @ToolParam(description = "Включить полную информацию о тестах (включая пройденные тесты и полный stack trace)", required = false) full: Boolean? = null,
     ): McpTestResponse {
         logger.info { "Запуск тестов модуля: $moduleName" }
 
         try {
             val request = RunModuleTestsRequest(moduleName)
             val result = launcherService.runTests(request)
-            return result.toResponse()
+            return result.toResponse(full = full ?: false)
         } catch (e: Exception) {
             logger.error(e) { "Ошибка при запуске тестов модуля: $moduleName" }
             return McpTestResponse(
