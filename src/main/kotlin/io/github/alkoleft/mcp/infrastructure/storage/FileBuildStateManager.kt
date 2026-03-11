@@ -23,7 +23,6 @@ package io.github.alkoleft.mcp.infrastructure.storage
 
 import io.github.alkoleft.mcp.application.actions.change.ChangesSet
 import io.github.alkoleft.mcp.application.actions.test.yaxunit.ChangeType
-import io.github.alkoleft.mcp.configuration.properties.ApplicationProperties
 import io.github.alkoleft.mcp.infrastructure.changes.Scanner
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +31,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flowOn
-import org.springframework.stereotype.Component
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.Instant
@@ -45,28 +43,29 @@ private val logger = KotlinLogging.logger { }
  * Build state manager implementing Enhanced Hybrid Hash Detection algorithm.
  * Combines fast timestamp pre-filtering with accurate hash verification for optimal performance.
  */
-@Component
 class FileBuildStateManager(
-    private val hashStorage: MapDbHashStorage,
-    private val properties: ApplicationProperties,
+    private val sourceSetContext: SourceSetContext,
     private val scanner: Scanner,
 ) {
+    private val hashStorage: HashStorage
+        get() = sourceSetContext.hashStorage
+
     @OptIn(ExperimentalCoroutinesApi::class)
     suspend fun checkChanges(): ChangesSet {
         val startTime = Instant.now()
-        logger.debug { "Анализ изменений: ${properties.basePath}" }
+        logger.debug { "Анализ изменений: ${sourceSetContext.basePath}" }
 
         try {
             // Phase 1: Fast timestamp pre-scan
             val candidateFiles =
-                properties.sourceSet
+                sourceSetContext.sourceSet
                     .asFlow()
                     .flowOn(Dispatchers.IO)
                     .flatMapMerge {
                         scanner
                             .scanByLastModifiedTime(
-                                properties.basePath.resolve(it.path),
-                                hashStorage.getSourceSetTimestamp(it.name),
+                                sourceSetContext.basePath.resolve(it.path),
+                                hashStorage.getSourceSetTimestamp(),
                             ).asFlow()
                     }
 
@@ -82,19 +81,16 @@ class FileBuildStateManager(
         } catch (e: Exception) {
             logger.error(e) { "Ошибка при обнаружении изменений" }
             // Fallback: treat all source files as changed
-            return getAllSourceFiles(properties.basePath).associateWith { Pair(ChangeType.MODIFIED, "") }
+            return getAllSourceFiles(sourceSetContext.basePath).associateWith { Pair(ChangeType.MODIFIED, "") }
         }
     }
 
     fun updateHashes(files: Map<Path, String>) {
-        hashStorage.batchUpdate(files)
+        sourceSetContext.hashStorage.batchUpdate(files)
     }
 
-    fun storeTimestamp(
-        sourceSetName: String,
-        timeStamp: Long,
-    ) {
-        hashStorage.storeTimestamp(sourceSetName, timeStamp)
+    fun storeTimestamp(timeStamp: Long) {
+        sourceSetContext.hashStorage.storeTimestamp(timeStamp)
     }
 
     /**

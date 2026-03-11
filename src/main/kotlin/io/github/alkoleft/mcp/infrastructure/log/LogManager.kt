@@ -26,6 +26,7 @@ import ch.qos.logback.core.Appender
 import ch.qos.logback.core.FileAppender
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Component
 import java.io.File
 
 private val logger = KotlinLogging.logger { }
@@ -33,6 +34,7 @@ private val logger = KotlinLogging.logger { }
 /**
  * Сервис управления логированием
  */
+@Component
 class LogManager {
     private val logFilePath: String? by lazy {
         val lc = LoggerFactory.getILoggerFactory() as LoggerContext

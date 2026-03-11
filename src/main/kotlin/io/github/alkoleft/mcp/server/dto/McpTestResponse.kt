@@ -22,6 +22,8 @@
 package io.github.alkoleft.mcp.server.dto
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import io.github.alkoleft.mcp.application.actions.common.ActionStepResult
+import io.github.alkoleft.mcp.application.actions.test.yaxunit.GenericTestSuite
 
 /**
  * Результат выполнения тестов в формате MCP
@@ -51,4 +53,7 @@ data class McpTestResponse(
     val executionTime: Long? = null,
     val enterpriseLogPath: String? = null,
     val logFile: String? = null,
+    val testDetail: List<GenericTestSuite>? = null,
+    val steps: List<ActionStepResult>? = null,
+    val errors: List<String>? = null,
 )
