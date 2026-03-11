@@ -109,9 +109,9 @@ class MapDbHashStorage(
             }
             db.commit()
         } catch (e: Exception) {
-            logger.error(e) { "Не удалось выполнить пакетное обновление хешей файлов" }
-            db.rollback()
-            throw e
+            logger.warn { "Не удалось сохранить хеши файлов (${updates.size} шт.) - кэш будет перестроен при следующей сборке" }
+            logger.debug(e) { "Детали ошибки сохранения хешей" }
+            tryRollback()
         }
     }
 
@@ -138,9 +138,20 @@ class MapDbHashStorage(
 
         logger.debug { "Временная метка сохранена для подпроекта: $sourceSetName" }
     } catch (e: Exception) {
-        logger.error(e) { "Не удалось сохранить временную метку для подпроекта: $sourceSetName" }
-        db.rollback()
-        throw e
+        logger.warn { "Не удалось сохранить временную метку для '$sourceSetName' - кэш будет перестроен при следующей сборке" }
+        logger.debug(e) { "Детали ошибки сохранения временной метки" }
+        tryRollback()
+    }
+
+    /**
+     * Безопасный rollback транзакции
+     */
+    private fun tryRollback() {
+        try {
+            db.rollback()
+        } catch (e: Exception) {
+            logger.debug { "Rollback не выполнен: ${e.message}" }
+        }
     }
 
     /**

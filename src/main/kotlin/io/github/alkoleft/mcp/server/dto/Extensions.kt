@@ -45,9 +45,6 @@ fun RunTestResult.toResponse() =
         passedTests = report?.summary?.passed,
         failedTests = report?.summary?.failed,
         executionTime = duration.inWholeMilliseconds,
-        testDetail = report?.testSuites,
-        steps = if (success) null else steps,
-        errors = errors,
     )
 
 fun SyntaxCheckResult.toResponse(

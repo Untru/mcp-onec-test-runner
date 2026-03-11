@@ -19,18 +19,17 @@
  * along with METR.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package io.github.alkoleft.mcp.server.dto
+package io.github.alkoleft.mcp.configuration.properties
 
 /**
- * Минимальный результат выполнения тестов в формате MCP
+ * Настройки сборки проекта
  */
-data class McpTestResponse(
-    val success: Boolean,
-    val message: String,
-    val totalTests: Int? = null,
-    val passedTests: Int? = null,
-    val failedTests: Int? = null,
-    val executionTime: Long? = null,
-    val enterpriseLogPath: String? = null,
-    val logFile: String? = null,
+data class BuildProperties(
+    /**
+     * Порог количества файлов для переключения на частичную загрузку.
+     * Если количество измененных файлов меньше этого значения,
+     * будет использована частичная загрузка (partial load).
+     * По умолчанию: 20 файлов
+     */
+    val partialLoadThreshold: Int = 20,
 )

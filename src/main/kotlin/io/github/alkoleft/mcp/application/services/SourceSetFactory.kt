@@ -67,9 +67,11 @@ class SourceSetFactory(
      */
     fun createDesignerSourceSet(): SourceSet =
         if (properties.format == ProjectFormat.EDT) {
+            // Для EDT экспорт (дамп) должен писать туда же, откуда потом читаем при загрузке:
+            // basePath + source-set[*].path. Иначе получаются "две логики" и танцы с путями.
             SourceSet(
-                properties.workPath,
-                properties.sourceSet.map { it.copy(path = it.name) },
+                properties.basePath,
+                properties.sourceSet,
             )
         } else {
             SourceSet(
