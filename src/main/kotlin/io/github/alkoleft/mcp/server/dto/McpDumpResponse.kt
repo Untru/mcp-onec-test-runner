@@ -21,6 +21,7 @@
 
 package io.github.alkoleft.mcp.server.dto
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import io.github.alkoleft.mcp.application.actions.common.ActionStepResult
 
 /**
@@ -37,6 +38,7 @@ import io.github.alkoleft.mcp.application.actions.common.ActionStepResult
  * @param errors Список ошибок, возникших во время выгрузки
  * @param steps Список шагов выполнения выгрузки (заполняется только при ошибках для диагностики)
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class McpDumpResponse(
     val success: Boolean,
     val message: String,

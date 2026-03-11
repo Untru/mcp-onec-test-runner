@@ -266,5 +266,4 @@ abstract class AbstractDumpAction(
         targetPath: Path,
         objects: List<String>,
     ): ProcessResult
-
 }

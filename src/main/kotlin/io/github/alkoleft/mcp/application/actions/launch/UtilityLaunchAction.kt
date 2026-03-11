@@ -25,7 +25,6 @@ import io.github.alkoleft.mcp.application.actions.common.LaunchAction
 import io.github.alkoleft.mcp.application.actions.common.LaunchRequest
 import io.github.alkoleft.mcp.application.actions.common.LaunchResult
 import io.github.alkoleft.mcp.application.core.UtilityType
-import io.github.alkoleft.mcp.configuration.properties.ApplicationProperties
 import io.github.alkoleft.mcp.infrastructure.platform.dsl.PlatformDsl
 import io.github.alkoleft.mcp.infrastructure.platform.dsl.process.ProcessResult
 import io.github.oshai.kotlinlogging.KotlinLogging

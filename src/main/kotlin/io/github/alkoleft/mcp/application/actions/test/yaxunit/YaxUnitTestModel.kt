@@ -21,6 +21,7 @@
 
 package io.github.alkoleft.mcp.application.actions.test.yaxunit
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import java.time.Instant
 import kotlin.time.Duration
 
@@ -74,6 +75,7 @@ data class TestSummary(
     val successRate: Double get() = if (totalTests > 0) passed.toDouble() / totalTests else 0.0
 }
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class GenericTestSuite(
     val name: String,
     val tests: Int,
@@ -81,15 +83,16 @@ data class GenericTestSuite(
     val failed: Int,
     val skipped: Int,
     val errors: Int = 0,
-    val duration: Duration,
+    val duration: Duration? = null,
     val testCases: List<GenericTestCase>,
 )
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class GenericTestCase(
     val name: String,
     val className: String?,
     val status: TestStatus,
-    val duration: Duration,
+    val duration: Duration? = null,
     val errorMessage: String? = null,
     val stackTrace: String? = null,
     val systemOut: String? = null,

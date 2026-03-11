@@ -38,30 +38,32 @@ import kotlin.time.Duration
  * @return MCP-ответ с результатами выполнения тестов
  */
 fun RunTestResult.toResponse(full: Boolean = false): McpTestResponse {
-    val testSuites = report?.testSuites?.let { suites ->
-        if (full) {
-            suites
-        } else {
-            // В компактном режиме оставляем только тесты со статусом FAILED или ERROR
-            suites.map { suite ->
-                suite.copy(
-                    testCases = suite.testCases
-                        .filter { it.status != TestStatus.PASSED }
-                        .map { testCase ->
-                            testCase.copy(
-                                errorMessage = testCase.errorMessage?.let { extractErrorMessage(testCase.errorMessage) },
-                                duration = null,
-                                stackTrace = null,
-                                systemOut = null,
-                                systemErr = null
-
-                            )
-                        },
-                    duration = null,
-                )
-            }.filter { it.testCases.isNotEmpty() }
+    val testSuites =
+        report?.testSuites?.let { suites ->
+            if (full) {
+                suites
+            } else {
+                // В компактном режиме оставляем только тесты со статусом FAILED или ERROR
+                suites
+                    .map { suite ->
+                        suite.copy(
+                            testCases =
+                                suite.testCases
+                                    .filter { it.status != TestStatus.PASSED }
+                                    .map { testCase ->
+                                        testCase.copy(
+                                            errorMessage = testCase.errorMessage?.let { extractErrorMessage(testCase.errorMessage) },
+                                            duration = null,
+                                            stackTrace = null,
+                                            systemOut = null,
+                                            systemErr = null,
+                                        )
+                                    },
+                            duration = null,
+                        )
+                    }.filter { it.testCases.isNotEmpty() }
+            }
         }
-    }
 
     return McpTestResponse(
         success = success,
@@ -84,9 +86,10 @@ fun RunTestResult.toResponse(full: Boolean = false): McpTestResponse {
  */
 private fun extractErrorMessage(stackTrace: String): String {
     val lines = stackTrace.lines()
-    val relevantLines = lines
-        .filter { !it.contains("ОбщийМодуль.ЮТ") }
-        .take(5) // Берем только первые 5 значимых строк
+    val relevantLines =
+        lines
+            .filter { !it.contains("ОбщийМодуль.ЮТ") }
+            .take(5) // Берем только первые 5 значимых строк
 
     return if (relevantLines.isEmpty()) {
         lines.firstOrNull() ?: stackTrace.take(500)

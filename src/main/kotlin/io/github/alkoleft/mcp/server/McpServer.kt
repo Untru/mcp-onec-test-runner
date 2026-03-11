@@ -87,7 +87,10 @@ class McpServer(
         description = "Запускает все тесты YaXUnit в проекте. Возвращает подробный отчет о выполнении тестов.",
     )
     fun runAllTests(
-        @ToolParam(description = "Включить полную информацию о тестах (включая пройденные тесты и полный stack trace)", required = false) full: Boolean? = null,
+        @ToolParam(
+            description = "Включить полную информацию о тестах (включая пройденные тесты и полный stack trace)",
+            required = false,
+        ) full: Boolean? = null,
     ): McpTestResponse {
         logger.info { "Запуск всех тестов YaXUnit" }
 
@@ -125,7 +128,10 @@ class McpServer(
     )
     fun runModuleTests(
         @ToolParam(description = "Имя модуля для тестирования") moduleName: String,
-        @ToolParam(description = "Включить полную информацию о тестах (включая пройденные тесты и полный stack trace)", required = false) full: Boolean? = null,
+        @ToolParam(
+            description = "Включить полную информацию о тестах (включая пройденные тесты и полный stack trace)",
+            required = false,
+        ) full: Boolean? = null,
     ): McpTestResponse {
         logger.info { "Запуск тестов модуля: $moduleName" }
 

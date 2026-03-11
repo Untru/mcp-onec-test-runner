@@ -40,7 +40,9 @@ fun EnterpriseDsl.connect(properties: ApplicationProperties) {
     connect(properties.connection.connectionString)
     properties.connection.user?.ifNoBlank { user(it) }
     properties.connection.password?.ifNoBlank { password(it) }
-    if (properties.tools.enterprise.additionalLaunchKeys.isNotEmpty()) {
+    if (properties.tools.enterprise.additionalLaunchKeys
+            .isNotEmpty()
+    ) {
         addLaunchKeys(properties.tools.enterprise.additionalLaunchKeys)
     }
 }

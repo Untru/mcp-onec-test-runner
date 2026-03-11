@@ -21,6 +21,8 @@
 
 package io.github.alkoleft.mcp.server.dto
 
+import com.fasterxml.jackson.annotation.JsonInclude
+
 /**
  * Результат запуска приложения в формате MCP
  *
@@ -29,6 +31,7 @@ package io.github.alkoleft.mcp.server.dto
  * @param success Успешность запуска (true, если приложение запущено успешно)
  * @param message Сообщение о результате запуска (может содержать PID процесса или описание ошибки)
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class McpLaunchResponse(
     val success: Boolean,
     val message: String,

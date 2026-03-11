@@ -32,7 +32,6 @@ private val logger = KotlinLogging.logger { }
 
 @Service
 class Scanner {
-
     suspend fun scanByLastModifiedTime(
         projectPath: Path,
         projectTimestamp: Long?,
@@ -61,11 +60,9 @@ class Scanner {
                 } catch (e: Exception) {
                     logger.debug(e) { "Ошибка при проверке временной метки для файла: $file" }
                     true
-
                 }
             }
     }
-
 
     /**
      * Gets all source files in the project that should be tracked for changes
